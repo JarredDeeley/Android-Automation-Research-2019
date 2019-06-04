@@ -9,6 +9,7 @@ import io.appium.java_client.remote.MobileCapabilityType;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -17,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,15 +53,13 @@ public class AutoSignInTest {
     }
 
     @Test
-    public void android_signin_test() {
+    public void android_signin_test() throws InterruptedException {
         Pattern existing_login_pattern = Pattern.compile("log.in", Pattern.CASE_INSENSITIVE);
+        boolean was_login_sucessful = false;
+
         //Find sign in text field or button
 
-        //attempt sign-in
-        //String pageSource = driver.getPageSource();
-
         // appium might have methods to get view elements rather than string mangling
-        // Find app to simulate phone number
         List<WebElement> elements = driver.findElementsByXPath("//*");
 
         for(WebElement webElement : elements) {
@@ -75,48 +75,42 @@ public class AutoSignInTest {
 
         login();
 
-        
+        // check if successful
+        was_login_sucessful = check_if_login_successful();
 
+        if (was_login_sucessful) {
+            System.out.println("Login was successful!");
+            return;
+        }
+
+        // drop the error msg
+        driver.navigate().back();
+
+        // get back to main screen
+        driver.navigate().back();
 
     }
 
     private void login() {
         String user_name = "***REMOVED***";
         String password = "***REMOVED***";
-        boolean entered_username = false;
-
-//        List<WebElement> login_page_elements = driver.findElementsByXPath("//*");
-//
-//        System.out.println("Number of elments: " + login_page_elements.size());
-//
-//        for (WebElement login_element : login_page_elements) {
-//            System.out.println(login_element.getTagName() + "\t text: " + login_element.getText());
-//            if (login_element.getTagName().equals("android.widget.EditText")) {
-//                //System.out.println("\t TEXT: " + login_element.getText());
-//
-//                if (!entered_username) {
-//                    System.out.println("Hi USER_NAME");
-//                    login_element.sendKeys(user_name);
-//                    entered_username = true;
-//                }
-//                else if(entered_username) {
-//
-//                    System.out.println("hi PASSWORD");
-//                    login_element.sendKeys(password);
-//
-//                    //login_element.sendKeys(Keys.ENTER);
-//                    System.out.println("End of entering password");
-//                    break;
-//                }
-//
-//            }
-//        }
 
         driver.findElementByXPath("//*[contains(@text, \'username\')]").sendKeys(user_name);
-
-        driver.findElementByXPath("//*[contains(@text, \'Password\')]").sendKeys("hithere");
+        driver.findElementByXPath("//*[contains(@text, \'Password\')]").sendKeys(password);
         driver.findElementByXPath("//*[contains(@text, \'Log In\')]").click();
+    }
 
+    private boolean check_if_login_successful() {
+        WebElement error_message = null;
+
+        try {
+            error_message = driver.findElementByXPath("//*[contains(@text, \'Incorrect\')]");
+            return false;
+        }
+        catch (NoSuchElementException exception) {
+        }
+
+        return true;
     }
 
 }
