@@ -1,3 +1,4 @@
+import com.android.uiautomator.core.UiSelector;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.AndroidElement;
@@ -21,6 +22,7 @@ import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class AutoSignInTest {
     private AppiumDriver driver;
@@ -89,28 +91,47 @@ public class AutoSignInTest {
         // get back to main screen
         driver.navigate().back();
 
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*sign.*up.*\")").click();
+
+        create_account();
     }
 
     private void login() {
         String user_name = "***REMOVED***";
         String password = "***REMOVED***";
 
-        driver.findElementByXPath("//*[contains(@text, \'username\')]").sendKeys(user_name);
-        driver.findElementByXPath("//*[contains(@text, \'Password\')]").sendKeys(password);
-        driver.findElementByXPath("//*[contains(@text, \'Log In\')]").click();
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*user.*name.*\")").sendKeys(user_name);
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*password.*\")").sendKeys(password);
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*log.*in.*\")").click();
     }
 
     private boolean check_if_login_successful() {
         WebElement error_message = null;
 
         try {
-            error_message = driver.findElementByXPath("//*[contains(@text, \'Incorrect\')]");
+            error_message = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i).*incorrect.*\")");
+
             return false;
         }
         catch (NoSuchElementException exception) {
         }
 
         return true;
+    }
+
+    private void create_account() {
+        String phone_number = "5052780459";
+
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*phone.*\")").sendKeys(phone_number);
+
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*next.*\")").click();
     }
 
 }
