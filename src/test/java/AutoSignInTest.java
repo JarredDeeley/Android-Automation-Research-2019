@@ -1,25 +1,18 @@
-import com.android.uiautomator.core.UiSelector;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.android.AndroidElement;
-import io.appium.java_client.android.AndroidKeyCode;
-import io.appium.java_client.android.nativekey.AndroidKey;
-import io.appium.java_client.android.nativekey.KeyEvent;
 import io.appium.java_client.remote.AndroidMobileCapabilityType;
 import io.appium.java_client.remote.MobileCapabilityType;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.TimeUnit;
+import java.security.GeneralSecurityException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,25 +48,11 @@ public class AutoSignInTest {
     }
 
     @Test
-    public void android_signin_test() throws InterruptedException {
-        Pattern existing_login_pattern = Pattern.compile("log.in", Pattern.CASE_INSENSITIVE);
+    public void android_signin_test() throws InterruptedException, IOException, GeneralSecurityException {
         boolean was_login_sucessful = false;
 
-        //Find sign in text field or button
-
-        // appium might have methods to get view elements rather than string mangling
-        List<WebElement> elements = driver.findElementsByXPath("//*");
-
-        for(WebElement webElement : elements) {
-            //System.out.println(webElement.getTagName() + "\t text: " + webElement.getText());
-
-            Matcher matcher = existing_login_pattern.matcher(webElement.getText());
-            if (matcher.find()) {
-                System.out.println("Found match!");
-                webElement.click();
-                break;
-            }
-        }
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*log.in.*\")").click();
 
         login();
 
@@ -124,7 +103,7 @@ public class AutoSignInTest {
         return true;
     }
 
-    private void create_account() {
+    private void create_account() throws IOException, GeneralSecurityException {
         String phone_number = "5052780459";
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
@@ -132,6 +111,39 @@ public class AutoSignInTest {
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*next.*\")").click();
+
+        // check if app is asking for confirm code
+        WebElement confirmation_code = null;
+        try {
+            confirmation_code = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i).*incorrect.*\")");
+        } catch (NoSuchElementException exception) {
+        }
+
+        if (confirmation_code != null) {
+            System.out.println(get_confirmation_code());
+        }
+
+        // Go get code from message
+
+        // enter confirm code edit box = "Confirmation Code" followed by next button
+    }
+
+    private String get_confirmation_code() throws IOException, GeneralSecurityException {
+        String text_message = get_confirmation_code_from_gmail();
+        Pattern code_pattern = Pattern.compile("(\\d.*\\d)");
+
+        Matcher code_matcher = code_pattern.matcher(text_message);
+
+        return code_matcher.group(1);
+    }
+
+    private String get_confirmation_code_from_gmail() throws IOException, GeneralSecurityException {
+        GmailAccess gmail = new GmailAccess();
+
+        String message = gmail.get_content_of_latest_email();
+
+        return message;
     }
 
 }
