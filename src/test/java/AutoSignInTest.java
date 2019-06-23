@@ -67,9 +67,6 @@ public class AutoSignInTest {
         // drop the error msg
         driver.navigate().back();
 
-        // get back to main screen
-        driver.navigate().back();
-
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*sign.*up.*\")").click();
 
@@ -112,16 +109,31 @@ public class AutoSignInTest {
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*next.*\")").click();
 
-        // check if app is asking for confirm code
-        WebElement confirmation_code = null;
+
+        //  tell sms permission from Instagram to sod off
         try {
-            confirmation_code = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    "new UiSelector().textMatches(\"(?i).*incorrect.*\")");
+            ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i).*allow.*messages.*\")");
+            ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i)deny\")").click();
         } catch (NoSuchElementException exception) {
         }
 
-        if (confirmation_code != null) {
-            System.out.println(get_confirmation_code());
+        // check if app is asking for confirm code
+        WebElement confirmation_code_field = null;
+        try {
+            confirmation_code_field = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i).*confirm.*code.*\")");
+        } catch (NoSuchElementException exception) {
+            System.out.println("Did not find confirm code field");
+        }
+
+        if (confirmation_code_field != null) {
+            String confirm_code = get_confirmation_code();
+            confirmation_code_field.sendKeys(confirm_code);
+
+            ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    "new UiSelector().textMatches(\"(?i)next\")").click();
         }
 
         // Go get code from message
@@ -131,11 +143,17 @@ public class AutoSignInTest {
 
     private String get_confirmation_code() throws IOException, GeneralSecurityException {
         String text_message = get_confirmation_code_from_gmail();
-        Pattern code_pattern = Pattern.compile("(\\d.*\\d)");
+        String confirm_code = "";
+        Pattern code_pattern = Pattern.compile("(\\d+.\\d+)");
 
+        System.out.println(code_pattern.matcher(text_message).matches());
         Matcher code_matcher = code_pattern.matcher(text_message);
 
-        return code_matcher.group(1);
+        if (code_matcher.find()) {
+            confirm_code = code_matcher.group(1).replaceAll("\\s+", "");
+        }
+
+        return confirm_code;
     }
 
     private String get_confirmation_code_from_gmail() throws IOException, GeneralSecurityException {
