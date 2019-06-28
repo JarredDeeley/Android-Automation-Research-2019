@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,8 @@ public class AutoSignInTest {
 
     private String package_name = "com.instagram.android";
     private String launchable_activity = "com.instagram.android.activity.MainTabActivity";
+
+    private String password = "***REMOVED***";
 
     @Before
     public void setup() throws MalformedURLException {
@@ -75,7 +78,6 @@ public class AutoSignInTest {
 
     private void login() {
         String user_name = "***REMOVED***";
-        String password = "***REMOVED***";
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*user.*name.*\")").sendKeys(user_name);
@@ -129,6 +131,12 @@ public class AutoSignInTest {
         }
 
         if (confirmation_code_field != null) {
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             String confirm_code = get_confirmation_code();
             confirmation_code_field.sendKeys(confirm_code);
 
@@ -136,9 +144,21 @@ public class AutoSignInTest {
                     "new UiSelector().textMatches(\"(?i)next\")").click();
         }
 
-        // Go get code from message
+        // full name
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i).*name\")").sendKeys("UTSA Research");
 
-        // enter confirm code edit box = "Confirmation Code" followed by next button
+        // password
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i)password\")").sendKeys(password);
+
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i)next\")").click();
+
+        // Pick user name or go with default
+        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                "new UiSelector().textMatches(\"(?i)next\")").click();
+
     }
 
     private String get_confirmation_code() throws IOException, GeneralSecurityException {
@@ -146,13 +166,13 @@ public class AutoSignInTest {
         String confirm_code = "";
         Pattern code_pattern = Pattern.compile("(\\d+.\\d+)");
 
-        System.out.println(code_pattern.matcher(text_message).matches());
         Matcher code_matcher = code_pattern.matcher(text_message);
 
         if (code_matcher.find()) {
             confirm_code = code_matcher.group(1).replaceAll("\\s+", "");
         }
 
+        System.out.printf("Confirmation Code: %s \n", confirm_code);
         return confirm_code;
     }
 

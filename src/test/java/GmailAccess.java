@@ -12,6 +12,7 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
+import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -81,6 +82,13 @@ public class GmailAccess {
         } else {
             return messages.get(0).getId();
         }
+    }
+
+    @Test
+    public void init_gmail_API() throws IOException, GeneralSecurityException {
+        String message = get_content_of_latest_email();
+
+        System.out.println(message);
     }
 
 }
