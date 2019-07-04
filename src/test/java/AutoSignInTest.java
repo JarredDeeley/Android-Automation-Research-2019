@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class AutoSignInTest {
     private AppiumDriver driver;
     private WebDriverWait webDriverWait;
@@ -29,7 +28,7 @@ public class AutoSignInTest {
     private String package_name = "com.instagram.android";
     private String launchable_activity = "com.instagram.android.activity.MainTabActivity";
 
-    private String password = "***REMOVED***";
+    private int time_delay_for_network = 5;
 
     @Before
     public void setup() throws MalformedURLException {
@@ -57,7 +56,8 @@ public class AutoSignInTest {
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*log.in.*\")").click();
 
-        login();
+        login("user_name", "password");
+        TimeUnit.SECONDS.sleep(time_delay_for_network);
 
         // check if successful
         was_login_sucessful = check_if_login_successful();
@@ -76,9 +76,7 @@ public class AutoSignInTest {
         create_account();
     }
 
-    private void login() {
-        String user_name = "***REMOVED***";
-
+    private void login(String user_name, String password) {
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*user.*name.*\")").sendKeys(user_name);
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
@@ -103,7 +101,11 @@ public class AutoSignInTest {
     }
 
     private void create_account() throws IOException, GeneralSecurityException {
-        String phone_number = "5052780459";
+        // load json profile
+        ProfileInformationLoader profile = new ProfileInformationLoader();
+
+        String phone_number = profile.get_phone_number();
+        String full_name = profile.get_full_name();
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*phone.*\")").sendKeys(phone_number);
@@ -132,7 +134,7 @@ public class AutoSignInTest {
 
         if (confirmation_code_field != null) {
             try {
-                TimeUnit.SECONDS.sleep(3);
+                TimeUnit.SECONDS.sleep(time_delay_for_network);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -146,11 +148,11 @@ public class AutoSignInTest {
 
         // full name
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*name\")").sendKeys("UTSA Research");
+                "new UiSelector().textMatches(\"(?i).*name\")").sendKeys(full_name);
 
         // password
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i)password\")").sendKeys(password);
+                "new UiSelector().textMatches(\"(?i)password\")").sendKeys(profile.get_password());
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i)next\")").click();
