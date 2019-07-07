@@ -11,6 +11,8 @@ public class ProfileInformationLoader {
     public ProfileInformationLoader() throws FileNotFoundException {
         reader = Json.createReader(new FileReader("profile.json"));
         profile = reader.readObject();
+
+        reader.close();
     }
 
     public String get_phone_number() {

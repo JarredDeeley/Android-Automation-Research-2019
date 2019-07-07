@@ -186,4 +186,13 @@ public class AutoSignInTest {
         return message;
     }
 
+    @Test
+    public void account_manager_test() throws IOException {
+        AccountManager account_manager = new AccountManager();
+        String login = "test2";
+        String password = "test_pass";
+
+        account_manager.save_account(login, password, package_name);
+    }
+
 }
