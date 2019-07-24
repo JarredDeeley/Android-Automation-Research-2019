@@ -27,7 +27,7 @@ public class AccountManager {
 
         // get json array from file
         accounts_builder = Json.createArrayBuilder();
-        if(!file_was_created) {
+        if(!isFileEmpty(accounts_file_path)) {
             InputStream accounts_file_stream = new FileInputStream(accounts_file_path);
             reader = Json.createReader(accounts_file_stream);
 
@@ -52,6 +52,36 @@ public class AccountManager {
         writer.close();
     }
 
-    // get json array
-    // return iterator?
+    public JsonArray getAccounts() throws FileNotFoundException {
+        JsonReader reader;
+        JsonArray accounts;
+
+        if(!isFileEmpty(accounts_file_path)) {
+            InputStream accounts_file_stream = new FileInputStream(accounts_file_path);
+            reader = Json.createReader(accounts_file_stream);
+
+            accounts = reader.readArray();
+            reader.close();
+        } else {
+            accounts = Json.createArrayBuilder().build();
+        }
+
+        return accounts;
+    }
+
+    private boolean isFileEmpty(String file_to_be_checked) throws FileNotFoundException {
+        File loaded_file = new File(file_to_be_checked);
+
+        if(loaded_file.isFile()) {
+            long size = loaded_file.length();
+
+            if(size != 0) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        throw new FileNotFoundException();
+    }
 }

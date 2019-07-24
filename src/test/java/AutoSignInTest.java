@@ -9,6 +9,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,8 +24,8 @@ public class AutoSignInTest {
     private WebDriverWait webDriverWait;
     private int time_out_seconds = 30;
 
-    private String android_version =  "7.1.1";
-    private String test_device_model = "Nexus6";
+    private String android_version =  "8.1.0";
+    private String test_device_model = "Pixel2";
 
     private String package_name = "com.instagram.android";
     private String launchable_activity = "com.instagram.android.activity.MainTabActivity";
@@ -52,23 +54,31 @@ public class AutoSignInTest {
     @Test
     public void android_signin_test() throws InterruptedException, IOException, GeneralSecurityException {
         boolean was_login_sucessful = false;
+        AccountManager accountManager = new AccountManager();
+        JsonArray accounts;
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*log.in.*\")").click();
 
-        login("user_name", "password");
-        TimeUnit.SECONDS.sleep(time_delay_for_network);
+        accounts = accountManager.getAccounts();
 
-        // check if successful
-        was_login_sucessful = check_if_login_successful();
+        for(int i = 0; i < accounts.size(); i++) {
+            JsonObject account = accounts.getJsonObject(i);
 
-        if (was_login_sucessful) {
-            System.out.println("Login was successful!");
-            return;
+            login(account.getString("login"), account.getString("password"));
+            TimeUnit.SECONDS.sleep(time_delay_for_network);
+
+            // check if successful
+            was_login_sucessful = check_if_login_successful();
+
+            if (was_login_sucessful) {
+                System.out.println("Login was successful!");
+                return;
+            }
+
+            // drop the error msg
+            driver.navigate().back();
         }
-
-        // drop the error msg
-        driver.navigate().back();
 
         ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                 "new UiSelector().textMatches(\"(?i).*sign.*up.*\")").click();
@@ -123,6 +133,12 @@ public class AutoSignInTest {
         } catch (NoSuchElementException exception) {
         }
 
+        try {
+            TimeUnit.SECONDS.sleep(time_delay_for_network);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         // check if app is asking for confirm code
         WebElement confirmation_code_field = null;
         try {
@@ -133,12 +149,6 @@ public class AutoSignInTest {
         }
 
         if (confirmation_code_field != null) {
-            try {
-                TimeUnit.SECONDS.sleep(time_delay_for_network);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
             String confirm_code = get_confirmation_code();
             confirmation_code_field.sendKeys(confirm_code);
 
