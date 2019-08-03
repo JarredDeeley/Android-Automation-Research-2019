@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.junit.Assert.fail;
+
 public class AutoSignInTest {
     private AppiumDriver driver;
     private WebDriverWait webDriverWait;
@@ -52,13 +54,19 @@ public class AutoSignInTest {
     }
 
     @Test
+    public void login_test() throws IOException, InterruptedException {
+        // component 1, find login screen
+
+        fail();
+    }
+
+    @Test
     public void android_signin_test() throws InterruptedException, IOException, GeneralSecurityException {
         boolean was_login_sucessful = false;
         AccountManager accountManager = new AccountManager();
         JsonArray accounts;
 
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*log.in.*\")").click();
+        get_element(".*log.in.*").click();
 
         accounts = accountManager.getAccounts();
 
@@ -80,19 +88,15 @@ public class AutoSignInTest {
             driver.navigate().back();
         }
 
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*sign.*up.*\")").click();
+        get_element(".*sign.*up.*").click();
 
         create_account();
     }
 
     private void login(String user_name, String password) {
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*user.*name.*\")").sendKeys(user_name);
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*password.*\")").sendKeys(password);
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*log.*in.*\")").click();
+        get_element(".*user.*name.*").sendKeys(user_name);
+        get_element(".*password.*").sendKeys(password);
+        get_element(".*log.*in.*").click();
     }
 
     private boolean check_if_login_successful() {
@@ -117,11 +121,9 @@ public class AutoSignInTest {
         String phone_number = profile.get_phone_number();
         String full_name = profile.get_full_name();
 
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*phone.*\")").sendKeys(phone_number);
+        get_element(".*phone.*").sendKeys(phone_number);
 
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*next.*\")").click();
+        get_element(".*next.*").click();
 
 
         //  tell sms permission from Instagram to sod off
@@ -152,24 +154,19 @@ public class AutoSignInTest {
             String confirm_code = get_confirmation_code();
             confirmation_code_field.sendKeys(confirm_code);
 
-            ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    "new UiSelector().textMatches(\"(?i)next\")").click();
+            get_element("next").click();
         }
 
         // full name
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i).*name\")").sendKeys(full_name);
+        get_element(".*name").sendKeys(full_name);
 
         // password
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i)password\")").sendKeys(profile.get_password());
+        get_element("password").sendKeys(profile.get_password());
 
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i)next\")").click();
+        get_element("next").click();
 
         // Pick user name or go with default
-        ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                "new UiSelector().textMatches(\"(?i)next\")").click();
+        get_element("next").click();
 
     }
 
@@ -203,6 +200,19 @@ public class AutoSignInTest {
         String password = "test_pass";
 
         account_manager.save_account(login, password, package_name);
+    }
+
+    private WebElement get_element(String element_regex) {
+        WebElement desired_element = null;
+        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", element_regex);
+
+        try {
+            desired_element = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
+                    ui_selector);
+        } catch (NoSuchElementException e) {
+        }
+
+        return desired_element;
     }
 
 }
