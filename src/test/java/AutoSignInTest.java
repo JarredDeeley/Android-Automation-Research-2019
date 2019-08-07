@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,8 +30,11 @@ public class AutoSignInTest {
     private String android_version =  "8.1.0";
     private String test_device_model = "Pixel2";
 
-    private String package_name = "com.instagram.android";
-    private String launchable_activity = "com.instagram.android.activity.MainTabActivity";
+    //private String package_name = "com.instagram.android";
+    //private String launchable_activity = "com.instagram.android.activity.MainTabActivity";
+
+    private String package_name = "org.wordpress.android";
+    private String launchable_activity = "org.wordpress.android.ui.WPLaunchActivity";
 
     private int time_delay_for_network = 5;
 
@@ -56,8 +60,12 @@ public class AutoSignInTest {
     @Test
     public void login_test() throws IOException, InterruptedException {
         // component 1, find login screen
+        boolean found_login_screen = find_login_screen();
+        if(!found_login_screen) {
+            fail("Did not find login screen. Found no known gui elements");
+        }
 
-        fail();
+
     }
 
     @Test
@@ -91,6 +99,58 @@ public class AutoSignInTest {
         get_element(".*sign.*up.*").click();
 
         create_account();
+    }
+
+    private boolean find_login_screen() {
+        boolean pass_first_screen = false;
+
+        // TODO: Add a counter to fail if loop is repeated more than x times to break endless looping?
+        while(true) {
+            // condition check
+            WebElement username_field = get_element(".*user.*name.*");
+            WebElement email_field = get_element(".*email.*");
+            // TODO can be multiple matches of an element (text vs edit)
+            // get list of elements to see what can be worked with
+
+            if(pass_first_screen) {
+                List<WebElement> elements = driver.findElementsByXPath("//*");
+                for (WebElement webElement : elements) {
+                    System.out.println(webElement.getText());
+                    System.out.println(webElement.getTagName());
+                }
+            }
+
+            if(email_field != null) {
+                System.out.println(email_field.getTagName());
+            }
+
+            if((username_field != null && username_field.getTagName().equals("android.widget.EditText")) ||
+                    (email_field != null && email_field.getTagName().equals("android.widget.EditText"))) {
+                break;
+            }
+
+            // Search through the screen to find elements
+            WebElement login_button = get_element(".*log.*in.*");
+            if(login_button != null) {
+                login_button.click();
+                pass_first_screen = true;
+                continue;
+            }
+
+            WebElement next_button = get_element("next");
+            if(next_button != null) {
+                next_button.click();
+                continue;
+            }
+
+            // TODO: How to handle this case of not finding a suitable element?
+            // new exception class?
+            // junit fail? Would be a problem if tool ran not as a test
+            return false;
+        }
+
+        System.out.println("Found login screen");
+        return true;
     }
 
     private void login(String user_name, String password) {
@@ -213,6 +273,15 @@ public class AutoSignInTest {
         }
 
         return desired_element;
+    }
+
+    private List<WebElement> get_elements(String element_regex) {
+        List<WebElement> desired_elements;
+        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", element_regex);
+
+        desired_elements = (List<WebElement>) ((AndroidDriver<?>) driver).findElementsByAndroidUIAutomator(ui_selector);
+
+        return desired_elements;
     }
 
 }
