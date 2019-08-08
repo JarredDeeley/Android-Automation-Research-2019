@@ -102,30 +102,26 @@ public class AutoSignInTest {
     }
 
     private boolean find_login_screen() {
-        boolean pass_first_screen = false;
+        boolean found_login = false;
 
         // TODO: Add a counter to fail if loop is repeated more than x times to break endless looping?
         while(true) {
             // condition check
-            WebElement username_field = get_element(".*user.*name.*");
-            WebElement email_field = get_element(".*email.*");
-            // TODO can be multiple matches of an element (text vs edit)
-            // get list of elements to see what can be worked with
+            List<WebElement> username_fields = get_elements(".*user.*name.*");
+            List<WebElement> email_fields = get_elements(".*email.*");
 
-            if(pass_first_screen) {
-                List<WebElement> elements = driver.findElementsByXPath("//*");
-                for (WebElement webElement : elements) {
-                    System.out.println(webElement.getText());
-                    System.out.println(webElement.getTagName());
+            for(WebElement element : username_fields) {
+                if(element.getTagName().equals("android.widget.EditText")) {
+                    found_login = true;
+                }
+            }
+            for(WebElement element : email_fields) {
+                if(element.getTagName().equals("android.widget.EditText")) {
+                    found_login = true;
                 }
             }
 
-            if(email_field != null) {
-                System.out.println(email_field.getTagName());
-            }
-
-            if((username_field != null && username_field.getTagName().equals("android.widget.EditText")) ||
-                    (email_field != null && email_field.getTagName().equals("android.widget.EditText"))) {
+            if(found_login) {
                 break;
             }
 
@@ -133,7 +129,6 @@ public class AutoSignInTest {
             WebElement login_button = get_element(".*log.*in.*");
             if(login_button != null) {
                 login_button.click();
-                pass_first_screen = true;
                 continue;
             }
 
