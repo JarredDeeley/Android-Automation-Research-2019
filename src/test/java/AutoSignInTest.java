@@ -36,7 +36,7 @@ public class AutoSignInTest {
     private String package_name = "org.wordpress.android";
     private String launchable_activity = "org.wordpress.android.ui.WPLaunchActivity";
 
-    private int time_delay_for_network = 5;
+    private int time_delay_for_network = 3;
 
     @Before
     public void setup() throws MalformedURLException {
@@ -65,39 +65,18 @@ public class AutoSignInTest {
             fail("Did not find login screen. Found no known gui elements");
         }
 
+        boolean is_login_success;
+        is_login_success = login();
+
+        if(!is_login_success) {
+            fail("Failed to login");
+        }
+
 
     }
 
     @Test
     public void android_signin_test() throws InterruptedException, IOException, GeneralSecurityException {
-        boolean was_login_sucessful = false;
-        AccountManager accountManager = new AccountManager();
-        JsonArray accounts;
-
-        get_element(".*log.in.*").click();
-
-        accounts = accountManager.getAccounts();
-
-        for(int i = 0; i < accounts.size(); i++) {
-            JsonObject account = accounts.getJsonObject(i);
-
-            login(account.getString("login"), account.getString("password"));
-            TimeUnit.SECONDS.sleep(time_delay_for_network);
-
-            // check if successful
-            was_login_sucessful = check_if_login_successful();
-
-            if (was_login_sucessful) {
-                System.out.println("Login was successful!");
-                return;
-            }
-
-            // drop the error msg
-            driver.navigate().back();
-        }
-
-        get_element(".*sign.*up.*").click();
-
         create_account();
     }
 
@@ -107,15 +86,10 @@ public class AutoSignInTest {
         // TODO: Add a counter to fail if loop is repeated more than x times to break endless looping?
         while(true) {
             // condition check
-            List<WebElement> username_fields = get_elements(".*user.*name.*");
-            List<WebElement> email_fields = get_elements(".*email.*");
+            List<WebElement> login_fields = get_elements(".*user.*name.*");
+            login_fields.addAll(get_elements(".*email.*"));
 
-            for(WebElement element : username_fields) {
-                if(element.getTagName().equals("android.widget.EditText")) {
-                    found_login = true;
-                }
-            }
-            for(WebElement element : email_fields) {
+            for(WebElement element : login_fields) {
                 if(element.getTagName().equals("android.widget.EditText")) {
                     found_login = true;
                 }
@@ -148,25 +122,129 @@ public class AutoSignInTest {
         return true;
     }
 
-    private void login(String user_name, String password) {
-        get_element(".*user.*name.*").sendKeys(user_name);
-        get_element(".*password.*").sendKeys(password);
-        get_element(".*log.*in.*").click();
-    }
+    private boolean login() throws IOException, InterruptedException {
+        AccountManager accountManager = new AccountManager();
+        JsonArray accounts;
+        boolean is_password_on_same_screen;
 
-    private boolean check_if_login_successful() {
-        WebElement error_message = null;
+        accounts = accountManager.getAccounts();
 
-        try {
-            error_message = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    "new UiSelector().textMatches(\"(?i).*incorrect.*\")");
+        // check for using another account to login (such as gmail)
 
+        if(accounts.size() == 0) {
+            System.out.println("No saved accounts found");
             return false;
         }
-        catch (NoSuchElementException exception) {
+
+        // start looping through account list
+        for(int i = 0; i < accounts.size(); i++) {
+            JsonObject account = accounts.getJsonObject(i);
+
+            // wordpress edge case. prompt on selecting email field
+            close_sign_in_prompt();
+
+            enter_username(account.getString("login"));
+
+            // check if pass is on same screen. if not, press next button then error check
+            is_password_on_same_screen = is_password_on_screen();
+            if(!is_password_on_same_screen) {
+                // press next button to get to password field
+                get_element(".*next.*").click();
+
+                TimeUnit.SECONDS.sleep(time_delay_for_network);
+
+                // error check to see if error with username
+                if(is_login_incorrect()) {
+                    continue;
+                }
+            }
+
+            enter_password(account.getString("password"));
+
+            List<WebElement> login_elements = get_elements("next");
+            login_elements.addAll(get_elements("log.*in"));
+
+            login_elements.get(0).click();
+
+            TimeUnit.SECONDS.sleep(time_delay_for_network);
+
+            if(is_login_incorrect()) {
+                continue;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    private void close_sign_in_prompt() {
+        List<WebElement> username_fields = get_elements(".*user.*name.*");
+        username_fields.addAll(get_elements(".*email.*"));
+
+        for(WebElement element : username_fields) {
+            if(element.getTagName().equals("android.widget.EditText")) {
+                element.click();
+                break;
+            }
+        }
+
+        WebElement prompt = get_element(".*continue.*with");
+        if(prompt != null) {
+            driver.navigate().back();
+        }
+    }
+
+    private void enter_username(String username) {
+        List<WebElement> username_fields = get_elements(".*user.*name.*");
+        username_fields.addAll(get_elements(".*email.*"));
+
+        for(WebElement element : username_fields) {
+            if(element.getTagName().equals("android.widget.EditText")) {
+                System.out.println("Enter username: " + username);
+                element.sendKeys(username);
+                break;
+            }
+        }
+    }
+
+    private boolean is_password_on_screen() {
+        List<WebElement> password_fields = get_elements(".*password.*");
+
+        for(WebElement element : password_fields) {
+            if(element.getTagName().equals("android.widget.EditText")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean is_login_incorrect() {
+        List<WebElement> errors = get_elements(".*can't find.*");
+        errors.addAll(get_elements(".*doesn't match.*"));
+        errors.addAll(get_elements(".*incorrect.*"));
+
+        if(errors.size() > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void find_password_field() {
+
+    }
+
+    private void enter_password(String password) {
+        List<WebElement> password_fields = get_elements(".*password.*");
+
+        for(WebElement element : password_fields) {
+            if(element.getTagName().equals("android.widget.EditText")) {
+                element.sendKeys(password);
+                break;
+            }
+        }
     }
 
     private void create_account() throws IOException, GeneralSecurityException {
@@ -251,7 +329,7 @@ public class AutoSignInTest {
     @Test
     public void account_manager_test() throws IOException {
         AccountManager account_manager = new AccountManager();
-        String login = "test2";
+        String login = "***REMOVED***";
         String password = "test_pass";
 
         account_manager.save_account(login, password, package_name);
