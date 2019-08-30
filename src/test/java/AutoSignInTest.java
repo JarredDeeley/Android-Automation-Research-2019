@@ -130,6 +130,26 @@ public class AutoSignInTest {
         accounts = accountManager.getAccounts();
 
         // check for using another account to login (such as gmail)
+        WebElement google_account_login = get_element("log in.*google.*");
+        if(google_account_login != null) {
+            google_account_login.click();
+
+            /*List<WebElement> elements = get_elements(".*");
+
+            for(WebElement element : elements) {
+                System.out.println('\n' + element.getText());
+                System.out.println(element.getTagName());
+            }*/
+
+            // assuming desired google account is already on the list
+            get_element(".*@.*").click();
+
+            if(is_login_incorrect()) {
+                return false;
+            }
+
+            return true;
+        }
 
         if(accounts.size() == 0) {
             System.out.println("No saved accounts found");
