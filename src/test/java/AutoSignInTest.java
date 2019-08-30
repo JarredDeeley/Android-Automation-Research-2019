@@ -26,6 +26,9 @@ public class AutoSignInTest {
     private AppiumDriver driver;
     private WebDriverWait webDriverWait;
     private int time_out_seconds = 30;
+    private int time_delay_for_network = 3;
+
+    private AutomationUtils utils;
 
     private String android_version =  "8.1.0";
     private String test_device_model = "Pixel2";
@@ -35,8 +38,6 @@ public class AutoSignInTest {
 
     private String package_name = "org.wordpress.android";
     private String launchable_activity = "org.wordpress.android.ui.WPLaunchActivity";
-
-    private int time_delay_for_network = 3;
 
     @Before
     public void setup() throws MalformedURLException {
@@ -55,18 +56,22 @@ public class AutoSignInTest {
 
         driver = new AndroidDriver(new URL("http://0.0.0.0:4723/wd/hub"), desiredCapabilities);
         webDriverWait = new WebDriverWait(driver, time_out_seconds);
+
+        utils = new AutomationUtils(driver);
     }
 
     @Test
     public void login_test() throws IOException, InterruptedException {
+        LoginAutomation login_tools = new LoginAutomation(driver);
+
         // component 1, find login screen
-        boolean found_login_screen = find_login_screen();
+        boolean found_login_screen = login_tools.find_login_screen();
         if(!found_login_screen) {
             fail("Did not find login screen. Found no known gui elements");
         }
 
         boolean is_login_success;
-        is_login_success = login();
+        is_login_success = login_tools.login();
 
         if(!is_login_success) {
             fail("Failed to login");
@@ -76,196 +81,15 @@ public class AutoSignInTest {
     }
 
     @Test
+    public void account_creation_test() {
+
+    }
+
+    @Test
     public void android_signin_test() throws InterruptedException, IOException, GeneralSecurityException {
         create_account();
     }
 
-    private boolean find_login_screen() {
-        boolean found_login = false;
-
-        // TODO: Add a counter to fail if loop is repeated more than x times to break endless looping?
-        while(true) {
-            // condition check
-            List<WebElement> login_fields = get_elements(".*user.*name.*");
-            login_fields.addAll(get_elements(".*email.*"));
-
-            for(WebElement element : login_fields) {
-                if(element.getTagName().equals("android.widget.EditText")) {
-                    found_login = true;
-                }
-            }
-
-            if(found_login) {
-                break;
-            }
-
-            // Search through the screen to find elements
-            WebElement login_button = get_element(".*log.*in.*");
-            if(login_button != null) {
-                login_button.click();
-                continue;
-            }
-
-            WebElement next_button = get_element("next");
-            if(next_button != null) {
-                next_button.click();
-                continue;
-            }
-
-            // TODO: How to handle this case of not finding a suitable element?
-            // new exception class?
-            // junit fail? Would be a problem if tool ran not as a test
-            return false;
-        }
-
-        System.out.println("Found login screen");
-        return true;
-    }
-
-    private boolean login() throws IOException, InterruptedException {
-        AccountManager accountManager = new AccountManager();
-        JsonArray accounts;
-        boolean is_password_on_same_screen;
-
-        accounts = accountManager.getAccounts();
-
-        // check for using another account to login (such as gmail)
-        WebElement google_account_login = get_element("log in.*google.*");
-        if(google_account_login != null) {
-            google_account_login.click();
-
-            /*List<WebElement> elements = get_elements(".*");
-
-            for(WebElement element : elements) {
-                System.out.println('\n' + element.getText());
-                System.out.println(element.getTagName());
-            }*/
-
-            // assuming desired google account is already on the list
-            get_element(".*@.*").click();
-
-            if(is_login_incorrect()) {
-                return false;
-            }
-
-            return true;
-        }
-
-        if(accounts.size() == 0) {
-            System.out.println("No saved accounts found");
-            return false;
-        }
-
-        // start looping through account list
-        for(int i = 0; i < accounts.size(); i++) {
-            JsonObject account = accounts.getJsonObject(i);
-
-            // wordpress edge case. prompt on selecting email field
-            close_sign_in_prompt();
-
-            enter_username(account.getString("login"));
-
-            // check if pass is on same screen. if not, press next button then error check
-            is_password_on_same_screen = is_password_on_screen();
-            if(!is_password_on_same_screen) {
-                // press next button to get to password field
-                get_element(".*next.*").click();
-
-                TimeUnit.SECONDS.sleep(time_delay_for_network);
-
-                // error check to see if error with username
-                if(is_login_incorrect()) {
-                    continue;
-                }
-            }
-
-            enter_password(account.getString("password"));
-
-            List<WebElement> login_elements = get_elements("next");
-            login_elements.addAll(get_elements("log.*in"));
-
-            login_elements.get(0).click();
-
-            TimeUnit.SECONDS.sleep(time_delay_for_network);
-
-            if(is_login_incorrect()) {
-                continue;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private void close_sign_in_prompt() {
-        List<WebElement> username_fields = get_elements(".*user.*name.*");
-        username_fields.addAll(get_elements(".*email.*"));
-
-        for(WebElement element : username_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
-                element.click();
-                break;
-            }
-        }
-
-        WebElement prompt = get_element(".*continue.*with");
-        if(prompt != null) {
-            driver.navigate().back();
-        }
-    }
-
-    private void enter_username(String username) {
-        List<WebElement> username_fields = get_elements(".*user.*name.*");
-        username_fields.addAll(get_elements(".*email.*"));
-
-        for(WebElement element : username_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
-                System.out.println("Enter username: " + username);
-                element.sendKeys(username);
-                break;
-            }
-        }
-    }
-
-    private boolean is_password_on_screen() {
-        List<WebElement> password_fields = get_elements(".*password.*");
-
-        for(WebElement element : password_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean is_login_incorrect() {
-        List<WebElement> errors = get_elements(".*can't find.*");
-        errors.addAll(get_elements(".*doesn't match.*"));
-        errors.addAll(get_elements(".*incorrect.*"));
-
-        if(errors.size() > 0) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private void find_password_field() {
-
-    }
-
-    private void enter_password(String password) {
-        List<WebElement> password_fields = get_elements(".*password.*");
-
-        for(WebElement element : password_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
-                element.sendKeys(password);
-                break;
-            }
-        }
-    }
 
     private void create_account() throws IOException, GeneralSecurityException {
         // load json profile
@@ -274,9 +98,9 @@ public class AutoSignInTest {
         String phone_number = profile.get_phone_number();
         String full_name = profile.get_full_name();
 
-        get_element(".*phone.*").sendKeys(phone_number);
+        utils.get_element(".*phone.*").sendKeys(phone_number);
 
-        get_element(".*next.*").click();
+        utils.get_element(".*next.*").click();
 
 
         //  tell sms permission from Instagram to sod off
@@ -307,19 +131,19 @@ public class AutoSignInTest {
             String confirm_code = get_confirmation_code();
             confirmation_code_field.sendKeys(confirm_code);
 
-            get_element("next").click();
+            utils.get_element("next").click();
         }
 
         // full name
-        get_element(".*name").sendKeys(full_name);
+        utils.get_element(".*name").sendKeys(full_name);
 
         // password
-        get_element("password").sendKeys(profile.get_password());
+        utils.get_element("password").sendKeys(profile.get_password());
 
-        get_element("next").click();
+        utils.get_element("next").click();
 
         // Pick user name or go with default
-        get_element("next").click();
+        utils.get_element("next").click();
 
     }
 
@@ -354,27 +178,4 @@ public class AutoSignInTest {
 
         account_manager.save_account(login, password, package_name);
     }
-
-    private WebElement get_element(String element_regex) {
-        WebElement desired_element = null;
-        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", element_regex);
-
-        try {
-            desired_element = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    ui_selector);
-        } catch (NoSuchElementException e) {
-        }
-
-        return desired_element;
-    }
-
-    private List<WebElement> get_elements(String element_regex) {
-        List<WebElement> desired_elements;
-        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", element_regex);
-
-        desired_elements = (List<WebElement>) ((AndroidDriver<?>) driver).findElementsByAndroidUIAutomator(ui_selector);
-
-        return desired_elements;
-    }
-
 }
