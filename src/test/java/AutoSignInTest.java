@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -64,7 +65,6 @@ public class AutoSignInTest {
     public void login_test() throws IOException, InterruptedException {
         LoginAutomation login_tools = new LoginAutomation(driver);
 
-        // component 1, find login screen
         boolean found_login_screen = login_tools.find_login_screen();
         if(!found_login_screen) {
             fail("Did not find login screen. Found no known gui elements");
@@ -81,15 +81,21 @@ public class AutoSignInTest {
     }
 
     @Test
-    public void account_creation_test() {
+    public void account_creation_test() throws FileNotFoundException {
+        AccountCreationAutomation creation_tools = new AccountCreationAutomation(driver);
 
+        boolean found_account_creation = creation_tools.find_account_creation_screen();
+        if(!found_account_creation) {
+            fail("Did not find account creation. Found no known gui elements");
+        }
+
+        boolean is_account_creation_success;
+        is_account_creation_success = creation_tools.create_account();
+
+        if(!is_account_creation_success) {
+            fail("Failed to create new account");
+        }
     }
-
-    @Test
-    public void android_signin_test() throws InterruptedException, IOException, GeneralSecurityException {
-        create_account();
-    }
-
 
     private void create_account() throws IOException, GeneralSecurityException {
         // load json profile
@@ -101,16 +107,6 @@ public class AutoSignInTest {
         utils.get_element(".*phone.*").sendKeys(phone_number);
 
         utils.get_element(".*next.*").click();
-
-
-        //  tell sms permission from Instagram to sod off
-        try {
-            ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    "new UiSelector().textMatches(\"(?i).*allow.*messages.*\")");
-            ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    "new UiSelector().textMatches(\"(?i)deny\")").click();
-        } catch (NoSuchElementException exception) {
-        }
 
         try {
             TimeUnit.SECONDS.sleep(time_delay_for_network);

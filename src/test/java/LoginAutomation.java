@@ -37,16 +37,18 @@ public class LoginAutomation {
             }
 
             // Search through the screen to find elements
-            WebElement login_button = utils.get_element(".*log.*in.*");
-            if(login_button != null) {
-                login_button.click();
+            try {
+                utils.get_element(".*log.*in.*").click();
                 continue;
             }
-
-            WebElement next_button = utils.get_element("next");
-            if(next_button != null) {
-                next_button.click();
+            catch (NullPointerException e) {
+            }
+            
+            try {
+                utils.get_element("next").click();
                 continue;
+            }
+            catch (NullPointerException e) {
             }
 
             // TODO: How to handle this case of not finding a suitable element?
@@ -70,13 +72,6 @@ public class LoginAutomation {
         WebElement google_account_login = utils.get_element("log in.*google.*");
         if(google_account_login != null) {
             google_account_login.click();
-
-            /*List<WebElement> elements = utils.get_elements(".*");
-
-            for(WebElement element : elements) {
-                System.out.println('\n' + element.getText());
-                System.out.println(element.getTagName());
-            }*/
 
             // assuming desired google account is already on the list
             utils.get_element(".*@.*").click();
