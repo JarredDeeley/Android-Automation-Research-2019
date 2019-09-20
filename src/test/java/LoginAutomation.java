@@ -43,7 +43,7 @@ public class LoginAutomation {
             }
             catch (NullPointerException e) {
             }
-            
+
             try {
                 utils.get_element("next").click();
                 continue;
@@ -77,7 +77,17 @@ public class LoginAutomation {
             utils.get_element(".*@.*").click();
 
             if(is_login_incorrect()) {
-                return false;
+                // check profile for google account
+                ProfileInformationLoader profile = new ProfileInformationLoader();
+                String google_email = profile.get_google_email();
+
+                try{
+                    utils.get_element(google_email).click();
+                }catch (NullPointerException e){}
+
+                if(!is_login_incorrect()) {
+                    return false;
+                }
             }
 
             return true;

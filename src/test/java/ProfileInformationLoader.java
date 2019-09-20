@@ -35,4 +35,6 @@ public class ProfileInformationLoader {
     public String get_password() {
         return profile.getString("password");
     }
+
+    public String get_google_email() { return profile.getString("google_email"); }
 }
