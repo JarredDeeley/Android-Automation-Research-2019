@@ -36,5 +36,13 @@ public class ProfileInformationLoader {
         return profile.getString("password");
     }
 
-    public String get_google_email() { return profile.getString("google_email"); }
+    public String get_google_email() {
+        String google_email = "";
+
+        try{
+            google_email = profile.getString("google_email");
+        } catch (NullPointerException e){}
+
+        return google_email;
+    }
 }

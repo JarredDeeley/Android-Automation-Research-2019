@@ -4,5 +4,6 @@
   "phone_number" : "",
   "email" : "",
   "username" : "",
-  "password" : ""
+  "password" : "",
+  "google_email" : ""
 }

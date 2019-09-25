@@ -74,16 +74,16 @@ public class LoginAutomation {
             google_account_login.click();
 
             // assuming desired google account is already on the list
-            utils.get_element(".*@.*").click();
+            ProfileInformationLoader profile = new ProfileInformationLoader();
+            String google_email = profile.get_google_email();
 
-            if(is_login_incorrect()) {
+            try{
+                utils.get_element(google_email).click();
+            }catch (NullPointerException e){}
+
+            if(google_email.isEmpty() || is_login_incorrect()) {
                 // check profile for google account
-                ProfileInformationLoader profile = new ProfileInformationLoader();
-                String google_email = profile.get_google_email();
-
-                try{
-                    utils.get_element(google_email).click();
-                }catch (NullPointerException e){}
+                utils.get_element(".*@.*").click();
 
                 if(!is_login_incorrect()) {
                     return false;

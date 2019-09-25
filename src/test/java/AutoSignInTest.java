@@ -9,14 +9,11 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -159,9 +156,9 @@ public class AutoSignInTest {
     }
 
     private String get_confirmation_code_from_gmail() throws IOException, GeneralSecurityException {
-        GmailAccess gmail = new GmailAccess();
+        // GmailAccess gmail = new GmailAccess();
 
-        String message = gmail.get_content_of_latest_email();
+        String message = ""; // gmail.get_content_of_latest_email();
 
         return message;
     }
