@@ -63,9 +63,8 @@ public class AccountCreationAutomation {
         ProfileInformationLoader profile = new ProfileInformationLoader();
 
         // login type
-        // TODO add option to specify which gmail account to use (maybe pull from profile.json)
         if(utils.get_element(".*sign up with google.*") != null) {
-            create_account_through_google();
+            create_account_through_google(profile);
             selected_login_type = login_type.THIRD_PARTY;
         } else if(utils.get_element("Phone") != null) {
             WebElement phone_field = utils.get_element("Phone");
@@ -104,7 +103,6 @@ public class AccountCreationAutomation {
         // profile info (full name)
         while(true) {
             // base case is when we found main activity
-            boolean is_account_created = false;
             String current_activity = ((AndroidDriver<MobileElement>) driver).currentActivity();
             current_activity = current_activity.toLowerCase();
 
@@ -118,6 +116,8 @@ public class AccountCreationAutomation {
                 continue;
             } catch(NullPointerException e) {
             }
+            // TODO fails to find continue button for some reason
+            // Despite a continue button being on screen, get element returns null
             try {
                 utils.get_element("continue").click();
                 continue;
@@ -130,12 +130,19 @@ public class AccountCreationAutomation {
         return false;
     }
 
-    private void create_account_through_google() {
+    private void create_account_through_google(ProfileInformationLoader profile) {
         WebElement google_button = utils.get_element(".*sign up with google.*");
+
+        String google_email = profile.get_google_email();
+
         try {
             google_button.click();
 
-            utils.get_element(".*@.*").click();
+            if(google_email.isEmpty()) {
+                utils.get_element(".*@.*").click();
+            } else {
+                utils.get_element(google_email).click();
+            }
 
             if(utils.get_element(".*wants to access your Google account.*") != null) {
                 utils.get_element("allow").click();
