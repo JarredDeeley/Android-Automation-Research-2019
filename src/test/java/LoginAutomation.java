@@ -1,4 +1,6 @@
 import io.appium.java_client.AppiumDriver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebElement;
 
 import javax.json.JsonArray;
@@ -12,15 +14,17 @@ public class LoginAutomation {
     private AutomationUtils utils;
     private AppiumDriver driver;
 
+    private static final Logger logger = LogManager.getLogger(LoginAutomation.class);
+
     public LoginAutomation(AppiumDriver driver) {
         this.driver = driver;
         utils = new AutomationUtils(driver);
     }
 
-    public boolean find_login_screen() {
+    public boolean find_login_screen() throws InterruptedException {
         boolean found_login = false;
+        boolean second_attempt = false;
 
-        // TODO: Add a counter to fail if loop is repeated more than x times to break endless looping?
         while(true) {
             // condition check
             List<WebElement> login_fields = utils.get_elements(".*user.*name.*");
@@ -39,6 +43,7 @@ public class LoginAutomation {
             // Search through the screen to find elements
             try {
                 utils.get_element(".*log.*in.*").click();
+                logger.info("clicking log in");
                 continue;
             }
             catch (NullPointerException e) {
@@ -46,18 +51,49 @@ public class LoginAutomation {
 
             try {
                 utils.get_element("next").click();
+                logger.info("clicking next");
                 continue;
             }
             catch (NullPointerException e) {
             }
 
-            // TODO: How to handle this case of not finding a suitable element?
-            // new exception class?
-            // junit fail? Would be a problem if tool ran not as a test
+            try {
+                utils.get_element(".*ok.*").click();
+                logger.info("clicking ok");
+                continue;
+            } catch (NullPointerException e){
+            }
+
+            try {
+                utils.get_element(".*yes.*").click();
+                logger.info("clicking yes");
+                continue;
+            } catch (NullPointerException e){
+            }
+
+            if(utils.get_element(".*google smart lock.*") != null) {
+                utils.get_element("none of the above");
+                continue;
+            }
+
+            try {
+                utils.get_single_clickable_element().click();
+                logger.info("clicking lone clickable");
+                continue;
+            } catch (NullPointerException e) {
+            }
+
+            if(!second_attempt) {
+                logger.info("Attempting again in case of app loading on start");
+                second_attempt = true;
+                TimeUnit.SECONDS.sleep(10);
+                continue;
+            }
+
             return false;
         }
 
-        System.out.println("Found login screen");
+        logger.info("Found login screen");
         return true;
     }
 
@@ -69,7 +105,7 @@ public class LoginAutomation {
         accounts = accountManager.getAccounts();
 
         // check for using another account to login (such as gmail)
-        WebElement google_account_login = utils.get_element("log in.*google.*");
+        WebElement google_account_login = utils.get_element(".*google.*");
         if(google_account_login != null) {
             google_account_login.click();
 

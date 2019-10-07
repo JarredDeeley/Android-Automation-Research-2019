@@ -1,14 +1,19 @@
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebElement;
 
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AccountCreationAutomation {
     private AutomationUtils utils;
     private AppiumDriver driver;
+
+    private static final Logger logger = LogManager.getLogger(AccountCreationAutomation.class);
 
     private enum login_type {
         THIRD_PARTY, PHONE, EMAIL
@@ -19,25 +24,33 @@ public class AccountCreationAutomation {
         utils = new AutomationUtils(driver);
     }
 
-    public boolean find_account_creation_screen() {
+    public boolean find_account_creation_screen() throws InterruptedException {
         boolean found_account_creation = false;
+        boolean second_attempt = false;
 
         while (true) {
             // condition check and base case
-            List<WebElement> creation_fields = utils.get_elements(".*sign up with google.*");
-            creation_fields.addAll(utils.get_elements("phone"));
+            List<WebElement> creation_fields = utils.get_elements(".*google.*");
+            // creation_fields.addAll(utils.get_elements("phone"));
 
             for(WebElement element : creation_fields) {
                 String tag_name = element.getTagName();
 
-                System.out.println("element: " + element.getText());
-                System.out.println("tag name: " + tag_name);
+                // System.out.println("element: " + element.getText());
+                // System.out.println("tag name: " + tag_name);
+                logger.info("element: " + element.getText());
+                logger.info("tag name: " + tag_name);
 
                 if(tag_name.equals("android.widget.EditText") || tag_name.equals("android.widget.Button")) {
+                    logger.info("Found account. Matching edittext or button");
+                    found_account_creation = true;
+                }
+
+                if(element.getText().equalsIgnoreCase("with google")) {
+                    logger.info("Found account. Matching 'with google'");
                     found_account_creation = true;
                 }
             }
-            System.out.println();
 
             if(found_account_creation) {
                 break;
@@ -46,9 +59,24 @@ public class AccountCreationAutomation {
             WebElement signup_button = utils.get_element(".*sign.*up.*");
             try {
                 signup_button.click();
+                logger.info("clicking element with sign up text");
                 continue;
             }
             catch (NullPointerException exception) {
+            }
+
+            try {
+                utils.get_single_clickable_element().click();
+                logger.info("Clicking lone clickable");
+                continue;
+            } catch (NullPointerException e) {
+            }
+
+            if(!second_attempt) {
+                logger.info("Failed to find element. Attempting again after sleep on off chance app needs to load");
+                second_attempt = true;
+                TimeUnit.SECONDS.sleep(10);
+                continue;
             }
 
             return false;
@@ -63,7 +91,8 @@ public class AccountCreationAutomation {
         ProfileInformationLoader profile = new ProfileInformationLoader();
 
         // login type
-        if(utils.get_element(".*sign up with google.*") != null) {
+        if(utils.get_element(".*google.*") != null) {
+            logger.info("Found google element");
             create_account_through_google(profile);
             selected_login_type = login_type.THIRD_PARTY;
         } else if(utils.get_element("Phone") != null) {
@@ -89,6 +118,7 @@ public class AccountCreationAutomation {
         // confirmation
         switch (selected_login_type) {
             case THIRD_PARTY:
+                logger.info("Third-party account method. No confirmation needed");
                 break;
             case PHONE:
                 // go get code from google voice
@@ -106,20 +136,24 @@ public class AccountCreationAutomation {
             String current_activity = ((AndroidDriver<MobileElement>) driver).currentActivity();
             current_activity = current_activity.toLowerCase();
 
+            logger.info("Current activity: " + current_activity);
+
             // if the string search is too slow then check out region matches
-            if(current_activity.contains("profile") || current_activity.contains("main")) {
+            if(current_activity.contains("profile") || current_activity.contains("main")
+             || current_activity.contains("navigation")) {
                 return true;
             }
 
             try {
                 utils.get_element("next").click();
+                logger.info("clicking next");
                 continue;
             } catch(NullPointerException e) {
             }
-            // TODO fails to find continue button for some reason
-            // Despite a continue button being on screen, get element returns null
+         
             try {
                 utils.get_element("continue").click();
+                logger.info("clicking continue");
                 continue;
             } catch (NullPointerException e) {
             }
@@ -131,11 +165,12 @@ public class AccountCreationAutomation {
     }
 
     private void create_account_through_google(ProfileInformationLoader profile) {
-        WebElement google_button = utils.get_element(".*sign up with google.*");
+        WebElement google_button = utils.get_element(".*google.*");
 
         String google_email = profile.get_google_email();
 
         try {
+            logger.info("Clicking google element");
             google_button.click();
 
             if(google_email.isEmpty()) {

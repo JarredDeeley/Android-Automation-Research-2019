@@ -31,11 +31,8 @@ public class AutoSignInTest {
     private String android_version =  "8.1.0";
     private String test_device_model = "Pixel2";
 
-    //private String package_name = "com.instagram.android";
-    //private String launchable_activity = "com.instagram.android.activity.MainTabActivity";
-
-    private String package_name = "org.wordpress.android";
-    private String launchable_activity = "org.wordpress.android.ui.WPLaunchActivity";
+    private String package_name = "net.slickdeals.android";
+    private String launchable_activity = "net.slickdeals.android.SlickdealsLauncher";
 
     @Before
     public void setup() throws MalformedURLException {
@@ -51,6 +48,7 @@ public class AutoSignInTest {
                 package_name);
         desiredCapabilities.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY,
                 launchable_activity);
+        desiredCapabilities.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, true);
 
         driver = new AndroidDriver(new URL("http://0.0.0.0:4723/wd/hub"), desiredCapabilities);
         webDriverWait = new WebDriverWait(driver, time_out_seconds);
@@ -78,7 +76,7 @@ public class AutoSignInTest {
     }
 
     @Test
-    public void account_creation_test() throws FileNotFoundException {
+    public void account_creation_test() throws FileNotFoundException, InterruptedException {
         AccountCreationAutomation creation_tools = new AccountCreationAutomation(driver);
 
         boolean found_account_creation = creation_tools.find_account_creation_screen();

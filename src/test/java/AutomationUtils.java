@@ -33,4 +33,18 @@ public class AutomationUtils {
 
         return desired_elements;
     }
+
+    public WebElement get_single_clickable_element() {
+        List<WebElement> clickable_elements;
+        String ui_clickable_selector = "new UiSelector().clickable(true)";
+
+        clickable_elements = (List<WebElement>)
+                ((AndroidDriver<?>) driver).findElementsByAndroidUIAutomator(ui_clickable_selector);
+
+        if(clickable_elements.size() == 1) {
+            return clickable_elements.get(0);
+        } else {
+            return null;
+        }
+    }
 }
