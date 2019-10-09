@@ -46,7 +46,7 @@ public class AccountCreationAutomation {
                     found_account_creation = true;
                 }
 
-                if(element.getText().contains("with Google")) {
+                if(element.getText().toLowerCase().contains("with google")) {
                     logger.info("Found account. Matching 'with google'");
                     found_account_creation = true;
                 }
