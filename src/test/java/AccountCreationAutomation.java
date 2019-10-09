@@ -46,7 +46,7 @@ public class AccountCreationAutomation {
                     found_account_creation = true;
                 }
 
-                if(element.getText().equalsIgnoreCase("with google")) {
+                if(element.getText().contains("with Google")) {
                     logger.info("Found account. Matching 'with google'");
                     found_account_creation = true;
                 }
@@ -140,7 +140,7 @@ public class AccountCreationAutomation {
 
             // if the string search is too slow then check out region matches
             if(current_activity.contains("profile") || current_activity.contains("main")
-             || current_activity.contains("navigation")) {
+             || current_activity.contains("navigation") || current_activity.contains("landing")) {
                 return true;
             }
 
@@ -150,7 +150,7 @@ public class AccountCreationAutomation {
                 continue;
             } catch(NullPointerException e) {
             }
-         
+
             try {
                 utils.get_element("continue").click();
                 logger.info("clicking continue");
