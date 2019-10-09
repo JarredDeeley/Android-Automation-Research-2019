@@ -36,6 +36,10 @@ public class LoginAutomation {
                 }
             }
 
+            if(utils.get_element("continue with google") != null) {
+                found_login = true;
+            }
+
             if(found_login) {
                 break;
             }
@@ -107,6 +111,7 @@ public class LoginAutomation {
         // check for using another account to login (such as gmail)
         WebElement google_account_login = utils.get_element(".*google.*");
         if(google_account_login != null) {
+            logger.info("clicking google element");
             google_account_login.click();
 
             // assuming desired google account is already on the list
@@ -115,13 +120,15 @@ public class LoginAutomation {
 
             try{
                 utils.get_element(google_email).click();
+                logger.info("selected provided profile email");
             }catch (NullPointerException e){}
 
             if(google_email.isEmpty() || is_login_incorrect()) {
-                // check profile for google account
+                logger.info("unable to use email from profile. Attempting any email listed");
                 utils.get_element(".*@.*").click();
 
                 if(!is_login_incorrect()) {
+                    logger.info("failed to login with google");
                     return false;
                 }
             }
