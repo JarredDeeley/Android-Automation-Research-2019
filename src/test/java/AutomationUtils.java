@@ -47,4 +47,13 @@ public class AutomationUtils {
             return null;
         }
     }
+
+    public void handle_google_radio_list() {
+        if(this.get_element(".*@.*") != null) {
+            try {
+                this.get_element("ok").click();
+            } catch (NullPointerException e) {
+            }
+        }
+    }
 }

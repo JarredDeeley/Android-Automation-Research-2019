@@ -36,7 +36,7 @@ public class LoginAutomation {
                 }
             }
 
-            if(utils.get_element("continue with google") != null) {
+            if(utils.get_element(".*google.*") != null) {
                 found_login = true;
             }
 
@@ -62,7 +62,7 @@ public class LoginAutomation {
             }
 
             try {
-                utils.get_element(".*ok.*").click();
+                utils.get_element(".*[^a-z]ok[^a-z].*").click();
                 logger.info("clicking ok");
                 continue;
             } catch (NullPointerException e){
@@ -78,6 +78,23 @@ public class LoginAutomation {
             if(utils.get_element(".*google smart lock.*") != null) {
                 utils.get_element("none of the above");
                 continue;
+            }
+
+            try {
+                utils.get_element(".*got it.*").click();
+                logger.info("clicking got it");
+
+                /*TimeUnit.SECONDS.sleep(3);
+                logger.info("slept");
+                List<WebElement> tmp_elements = utils.get_elements(".*");
+
+                for(WebElement element: tmp_elements) {
+                    logger.info(element.getTagName() + "  text: " + element.getText());
+                }
+                logger.info("end of listing out elements");*/
+
+                continue;
+            } catch (NullPointerException e){
             }
 
             try {
@@ -121,11 +138,14 @@ public class LoginAutomation {
             try{
                 utils.get_element(google_email).click();
                 logger.info("selected provided profile email");
+                utils.handle_google_radio_list();
             }catch (NullPointerException e){}
 
             if(google_email.isEmpty() || is_login_incorrect()) {
                 logger.info("unable to use email from profile. Attempting any email listed");
                 utils.get_element(".*@.*").click();
+
+                utils.handle_google_radio_list();
 
                 if(!is_login_incorrect()) {
                     logger.info("failed to login with google");

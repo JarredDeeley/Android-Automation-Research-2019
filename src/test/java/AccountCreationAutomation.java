@@ -46,8 +46,8 @@ public class AccountCreationAutomation {
                     found_account_creation = true;
                 }
 
-                if(element.getText().toLowerCase().contains("with google")) {
-                    logger.info("Found account. Matching 'with google'");
+                if(element.getText().toLowerCase().contains("google")) {
+                    logger.info("Found account. Matching 'google'");
                     found_account_creation = true;
                 }
             }
@@ -56,7 +56,7 @@ public class AccountCreationAutomation {
                 break;
             }
 
-            WebElement signup_button = utils.get_element(".*sign.*up.*");
+            WebElement signup_button = utils.get_element(".*sign.up.*");
             try {
                 signup_button.click();
                 logger.info("clicking element with sign up text");
@@ -140,7 +140,8 @@ public class AccountCreationAutomation {
 
             // if the string search is too slow then check out region matches
             if(current_activity.contains("profile") || current_activity.contains("main")
-             || current_activity.contains("navigation") || current_activity.contains("landing")) {
+             || current_activity.contains("navigation") || current_activity.contains("landing")
+            || current_activity.contains("searchformspager")) {
                 return true;
             }
 
@@ -178,6 +179,8 @@ public class AccountCreationAutomation {
             } else {
                 utils.get_element(google_email).click();
             }
+
+            utils.handle_google_radio_list();
 
             if(utils.get_element(".*wants to access your Google account.*") != null) {
                 utils.get_element("allow").click();
