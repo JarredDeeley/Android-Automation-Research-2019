@@ -54,6 +54,14 @@ public class LoginAutomation {
             }
 
             try {
+                utils.get_element(".*sign.in.*").click();
+                logger.info("clicking sign in");
+                continue;
+            }
+            catch (NullPointerException e) {
+            }
+
+            try {
                 utils.get_element("next").click();
                 logger.info("clicking next");
                 continue;
@@ -153,7 +161,15 @@ public class LoginAutomation {
                 }
             }
 
-            return true;
+            // google permissions
+            if(utils.get_element(".*wants to access your Google account.*") != null
+               || utils.get_element(".*would like to:") != null) {
+                utils.get_element("allow").click();
+            }
+
+            boolean reached_main_activity = get_to_main_activity();
+
+            return reached_main_activity;
         }
 
         if(accounts.size() == 0) {
@@ -201,6 +217,20 @@ public class LoginAutomation {
         }
 
         return false;
+    }
+
+    private boolean get_to_main_activity() {
+        while(!utils.is_at_main_activity()) {
+            try {
+                utils.get_element("skip").click();
+                continue;
+            } catch (NullPointerException e) {
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private void close_sign_in_prompt() {

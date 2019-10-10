@@ -24,15 +24,14 @@ public class AutoSignInTest {
     private AppiumDriver driver;
     private WebDriverWait webDriverWait;
     private int time_out_seconds = 30;
-    private int time_delay_for_network = 3;
 
     private AutomationUtils utils;
 
     private String android_version =  "8.1.0";
     private String test_device_model = "Pixel2";
 
-    private String package_name = "net.slickdeals.android";
-    private String launchable_activity = "net.slickdeals.android.SlickdealsLauncher";
+    private String package_name = "";
+    private String launchable_activity = "";
 
     @Before
     public void setup() throws MalformedURLException {
@@ -104,7 +103,7 @@ public class AutoSignInTest {
         utils.get_element(".*next.*").click();
 
         try {
-            TimeUnit.SECONDS.sleep(time_delay_for_network);
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

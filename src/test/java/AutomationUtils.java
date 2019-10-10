@@ -1,5 +1,8 @@
 import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
@@ -7,6 +10,8 @@ import java.util.List;
 
 public class AutomationUtils {
     private AppiumDriver driver;
+    private int time_delay_for_network = 3;
+    private static final Logger logger = LogManager.getLogger(AutomationUtils.class);
 
     public AutomationUtils(AppiumDriver driver) {
         this.driver = driver;
@@ -20,6 +25,7 @@ public class AutomationUtils {
             desired_element = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
                     ui_selector);
         } catch (NoSuchElementException e) {
+            logger.trace("Did not find element: " + element_regex);
         }
 
         return desired_element;
@@ -55,5 +61,25 @@ public class AutomationUtils {
             } catch (NullPointerException e) {
             }
         }
+    }
+
+    public int get_time_delay_for_network() {
+        return time_delay_for_network;
+    }
+
+    public boolean is_at_main_activity() {
+        String current_activity = ((AndroidDriver<MobileElement>) driver).currentActivity();
+        current_activity = current_activity.toLowerCase();
+
+        logger.info("Current activity: " + current_activity);
+
+        if(current_activity.contains("profile") || current_activity.contains("main")
+                || current_activity.contains("navigation") || current_activity.contains("landing")
+                || current_activity.contains("searchformspager") || current_activity.contains("home")
+                || current_activity.contains("sellersnearbyactivity") ) {
+            return true;
+        }
+
+        return false;
     }
 }

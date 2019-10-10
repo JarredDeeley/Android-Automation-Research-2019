@@ -1,6 +1,4 @@
 import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.MobileElement;
-import io.appium.java_client.android.AndroidDriver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebElement;
@@ -133,15 +131,7 @@ public class AccountCreationAutomation {
         // profile info (full name)
         while(true) {
             // base case is when we found main activity
-            String current_activity = ((AndroidDriver<MobileElement>) driver).currentActivity();
-            current_activity = current_activity.toLowerCase();
-
-            logger.info("Current activity: " + current_activity);
-
-            // if the string search is too slow then check out region matches
-            if(current_activity.contains("profile") || current_activity.contains("main")
-             || current_activity.contains("navigation") || current_activity.contains("landing")
-            || current_activity.contains("searchformspager")) {
+            if(utils.is_at_main_activity()) {
                 return true;
             }
 
@@ -155,6 +145,13 @@ public class AccountCreationAutomation {
             try {
                 utils.get_element("continue").click();
                 logger.info("clicking continue");
+                continue;
+            } catch (NullPointerException e) {
+            }
+
+            try {
+                utils.get_element("skip").click();
+                logger.info("clicking skip");
                 continue;
             } catch (NullPointerException e) {
             }
