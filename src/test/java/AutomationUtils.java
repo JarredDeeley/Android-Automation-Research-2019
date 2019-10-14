@@ -3,6 +3,7 @@ import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
@@ -17,25 +18,31 @@ public class AutomationUtils {
         this.driver = driver;
     }
 
-    public WebElement get_element(String element_regex) {
+    public WebElement get_element(String search_string) {
         WebElement desired_element = null;
-        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", element_regex);
+
+        String xpath_selector = String.format(
+                "//*[contains(translate(@text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"%s\")]",
+                search_string);
 
         try {
-            desired_element = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(
-                    ui_selector);
+            desired_element = driver.findElement(By.xpath(xpath_selector));
         } catch (NoSuchElementException e) {
-            logger.trace("Did not find element: " + element_regex);
+            logger.trace("Did not find element: " + search_string);
         }
+
+        logger.trace(desired_element);
 
         return desired_element;
     }
 
-    public List<WebElement> get_elements(String element_regex) {
+    public List<WebElement> get_elements(String search_string) {
         List<WebElement> desired_elements;
-        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", element_regex);
+        String xpath_selector = String.format(
+                "//*[contains(translate(@text, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"%s\")]",
+                search_string);
 
-        desired_elements = (List<WebElement>) ((AndroidDriver<?>) driver).findElementsByAndroidUIAutomator(ui_selector);
+        desired_elements = driver.findElements(By.xpath(xpath_selector));
 
         return desired_elements;
     }
@@ -55,7 +62,7 @@ public class AutomationUtils {
     }
 
     public void handle_google_radio_list() {
-        if(this.get_element(".*@.*") != null) {
+        if(this.get_element("@") != null) {
             try {
                 this.get_element("ok").click();
             } catch (NullPointerException e) {

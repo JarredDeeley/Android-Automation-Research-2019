@@ -27,16 +27,17 @@ public class LoginAutomation {
 
         while(true) {
             // condition check
-            List<WebElement> login_fields = utils.get_elements(".*user.*name.*");
-            login_fields.addAll(utils.get_elements(".*email.*"));
+
+            List<WebElement> login_fields = utils.get_elements("user name");
+            login_fields.addAll(utils.get_elements("email"));
 
             for(WebElement element : login_fields) {
-                if(element.getTagName().equals("android.widget.EditText")) {
+                if(element.getAttribute("class").equals("android.widget.EditText")) {
                     found_login = true;
                 }
             }
 
-            if(utils.get_element(".*google.*") != null) {
+            if(utils.get_element("google") != null) {
                 found_login = true;
             }
 
@@ -46,7 +47,7 @@ public class LoginAutomation {
 
             // Search through the screen to find elements
             try {
-                utils.get_element(".*log.*in.*").click();
+                utils.get_element("log in").click();
                 logger.info("clicking log in");
                 continue;
             }
@@ -54,7 +55,7 @@ public class LoginAutomation {
             }
 
             try {
-                utils.get_element(".*sign.in.*").click();
+                utils.get_element("sign in").click();
                 logger.info("clicking sign in");
                 continue;
             }
@@ -70,36 +71,27 @@ public class LoginAutomation {
             }
 
             try {
-                utils.get_element(".*[^a-z]ok[^a-z].*").click();
+                utils.get_element("ok").click();
                 logger.info("clicking ok");
                 continue;
             } catch (NullPointerException e){
             }
 
             try {
-                utils.get_element(".*yes.*").click();
+                utils.get_element("yes").click();
                 logger.info("clicking yes");
                 continue;
             } catch (NullPointerException e){
             }
 
-            if(utils.get_element(".*google smart lock.*") != null) {
-                utils.get_element("none of the above");
+            if(utils.get_element("google smart lock") != null) {
+                utils.get_element("none of the above").click();
                 continue;
             }
 
             try {
-                utils.get_element(".*got it.*").click();
+                utils.get_element("got it").click();
                 logger.info("clicking got it");
-
-                /*TimeUnit.SECONDS.sleep(3);
-                logger.info("slept");
-                List<WebElement> tmp_elements = utils.get_elements(".*");
-
-                for(WebElement element: tmp_elements) {
-                    logger.info(element.getTagName() + "  text: " + element.getText());
-                }
-                logger.info("end of listing out elements");*/
 
                 continue;
             } catch (NullPointerException e){
@@ -134,7 +126,7 @@ public class LoginAutomation {
         accounts = accountManager.getAccounts();
 
         // check for using another account to login (such as gmail)
-        WebElement google_account_login = utils.get_element(".*google.*");
+        WebElement google_account_login = utils.get_element("google");
         if(google_account_login != null) {
             logger.info("clicking google element");
             google_account_login.click();
@@ -151,7 +143,7 @@ public class LoginAutomation {
 
             if(google_email.isEmpty() || is_login_incorrect()) {
                 logger.info("unable to use email from profile. Attempting any email listed");
-                utils.get_element(".*@.*").click();
+                utils.get_element("@").click();
 
                 utils.handle_google_radio_list();
 
@@ -162,10 +154,12 @@ public class LoginAutomation {
             }
 
             // google permissions
-            if(utils.get_element(".*wants to access your Google account.*") != null
-               || utils.get_element(".*would like to:") != null) {
+            if(utils.get_element("wants to access your Google account") != null
+               || utils.get_element("would like to:") != null) {
                 utils.get_element("allow").click();
             }
+
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             boolean reached_main_activity = get_to_main_activity();
 
@@ -190,7 +184,7 @@ public class LoginAutomation {
             is_password_on_same_screen = is_password_on_screen();
             if(!is_password_on_same_screen) {
                 // press next button to get to password field
-                utils.get_element(".*next.*").click();
+                utils.get_element("next").click();
 
                 TimeUnit.SECONDS.sleep(time_delay_for_network);
 
@@ -203,7 +197,7 @@ public class LoginAutomation {
             enter_password(account.getString("password"));
 
             List<WebElement> login_elements = utils.get_elements("next");
-            login_elements.addAll(utils.get_elements("log.*in"));
+            login_elements.addAll(utils.get_elements("log in"));
 
             login_elements.get(0).click();
 
@@ -227,6 +221,12 @@ public class LoginAutomation {
             } catch (NullPointerException e) {
             }
 
+            try {
+                utils.get_element("continue").click();
+                continue;
+            } catch (NullPointerException e) {
+            }
+
             return false;
         }
 
@@ -234,28 +234,28 @@ public class LoginAutomation {
     }
 
     private void close_sign_in_prompt() {
-        List<WebElement> username_fields = utils.get_elements(".*user.*name.*");
-        username_fields.addAll(utils.get_elements(".*email.*"));
+        List<WebElement> username_fields = utils.get_elements("user name");
+        username_fields.addAll(utils.get_elements("email"));
 
         for(WebElement element : username_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
+            if(element.getAttribute("class").equals("android.widget.EditText")) {
                 element.click();
                 break;
             }
         }
 
-        WebElement prompt = utils.get_element(".*continue.*with");
+        WebElement prompt = utils.get_element("continue with");
         if(prompt != null) {
             driver.navigate().back();
         }
     }
 
     private void enter_username(String username) {
-        List<WebElement> username_fields = utils.get_elements(".*user.*name.*");
-        username_fields.addAll(utils.get_elements(".*email.*"));
+        List<WebElement> username_fields = utils.get_elements("user name");
+        username_fields.addAll(utils.get_elements("email"));
 
         for(WebElement element : username_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
+            if(element.getAttribute("class").equals("android.widget.EditText")) {
                 System.out.println("Enter username: " + username);
                 element.sendKeys(username);
                 break;
@@ -264,10 +264,10 @@ public class LoginAutomation {
     }
 
     private boolean is_password_on_screen() {
-        List<WebElement> password_fields = utils.get_elements(".*password.*");
+        List<WebElement> password_fields = utils.get_elements("password");
 
         for(WebElement element : password_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
+            if(element.getAttribute("class").equals("android.widget.EditText")) {
                 return true;
             }
         }
@@ -276,9 +276,9 @@ public class LoginAutomation {
     }
 
     private boolean is_login_incorrect() {
-        List<WebElement> errors = utils.get_elements(".*can't find.*");
-        errors.addAll(utils.get_elements(".*doesn't match.*"));
-        errors.addAll(utils.get_elements(".*incorrect.*"));
+        List<WebElement> errors = utils.get_elements("can't find");
+        errors.addAll(utils.get_elements("doesn't match"));
+        errors.addAll(utils.get_elements("incorrect"));
 
         if(errors.size() > 0) {
             return true;
@@ -292,10 +292,10 @@ public class LoginAutomation {
     }
 
     private void enter_password(String password) {
-        List<WebElement> password_fields = utils.get_elements(".*password.*");
+        List<WebElement> password_fields = utils.get_elements("password");
 
         for(WebElement element : password_fields) {
-            if(element.getTagName().equals("android.widget.EditText")) {
+            if(element.getAttribute("class").equals("android.widget.EditText")) {
                 element.sendKeys(password);
                 break;
             }

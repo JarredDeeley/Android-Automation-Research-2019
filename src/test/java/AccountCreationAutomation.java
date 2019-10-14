@@ -28,18 +28,16 @@ public class AccountCreationAutomation {
 
         while (true) {
             // condition check and base case
-            List<WebElement> creation_fields = utils.get_elements(".*google.*");
+            List<WebElement> creation_fields = utils.get_elements("google");
             // creation_fields.addAll(utils.get_elements("phone"));
 
             for(WebElement element : creation_fields) {
-                String tag_name = element.getTagName();
+                String class_name = element.getAttribute("class");
 
-                // System.out.println("element: " + element.getText());
-                // System.out.println("tag name: " + tag_name);
                 logger.info("element: " + element.getText());
-                logger.info("tag name: " + tag_name);
+                logger.info("class name: " + class_name);
 
-                if(tag_name.equals("android.widget.EditText") || tag_name.equals("android.widget.Button")) {
+                if(class_name.equals("android.widget.EditText") || class_name.equals("android.widget.Button")) {
                     logger.info("Found account. Matching edittext or button");
                     found_account_creation = true;
                 }
@@ -54,7 +52,7 @@ public class AccountCreationAutomation {
                 break;
             }
 
-            WebElement signup_button = utils.get_element(".*sign.up.*");
+            WebElement signup_button = utils.get_element("sign up");
             try {
                 signup_button.click();
                 logger.info("clicking element with sign up text");
@@ -83,30 +81,27 @@ public class AccountCreationAutomation {
         return found_account_creation;
     }
 
-    public boolean create_account() throws FileNotFoundException {
+    public boolean create_account() throws FileNotFoundException, InterruptedException {
         boolean found_creation_method = false;
         login_type selected_login_type = login_type.THIRD_PARTY;
         ProfileInformationLoader profile = new ProfileInformationLoader();
 
         // login type
-        if(utils.get_element(".*google.*") != null) {
+        if(utils.get_element("google") != null) {
             logger.info("Found google element");
             create_account_through_google(profile);
             selected_login_type = login_type.THIRD_PARTY;
+
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
         } else if(utils.get_element("Phone") != null) {
             WebElement phone_field = utils.get_element("Phone");
-            if(phone_field.getTagName().equals("android.widget.EditText")) {
+            if(phone_field.getAttribute("class").equals("android.widget.EditText")) {
                 selected_login_type = login_type.PHONE;
                 phone_field.sendKeys(profile.get_phone_number());
 
                 try {
                     utils.get_element("next").click();
                 } catch (NullPointerException e) {
-                }
-
-                // dismiss sms permission
-                if(utils.get_element(".*allow.*to send and view SMS messages.*") != null) {
-                    utils.get_element(".*deny.*").click();
                 }
             }
         } else {
@@ -134,6 +129,8 @@ public class AccountCreationAutomation {
             if(utils.is_at_main_activity()) {
                 return true;
             }
+
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             try {
                 utils.get_element("next").click();
@@ -163,7 +160,7 @@ public class AccountCreationAutomation {
     }
 
     private void create_account_through_google(ProfileInformationLoader profile) {
-        WebElement google_button = utils.get_element(".*google.*");
+        WebElement google_button = utils.get_element("google");
 
         String google_email = profile.get_google_email();
 
@@ -172,14 +169,14 @@ public class AccountCreationAutomation {
             google_button.click();
 
             if(google_email.isEmpty()) {
-                utils.get_element(".*@.*").click();
+                utils.get_element("@").click();
             } else {
                 utils.get_element(google_email).click();
             }
 
             utils.handle_google_radio_list();
 
-            if(utils.get_element(".*wants to access your Google account.*") != null) {
+            if(utils.get_element("wants to access your Google account") != null) {
                 utils.get_element("allow").click();
             }
         } catch (NullPointerException e) {
