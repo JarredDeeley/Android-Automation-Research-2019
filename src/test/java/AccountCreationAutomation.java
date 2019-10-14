@@ -29,7 +29,6 @@ public class AccountCreationAutomation {
         while (true) {
             // condition check and base case
             List<WebElement> creation_fields = utils.get_elements("google");
-            // creation_fields.addAll(utils.get_elements("phone"));
 
             for(WebElement element : creation_fields) {
                 String class_name = element.getAttribute("class");
@@ -93,17 +92,6 @@ public class AccountCreationAutomation {
             selected_login_type = login_type.THIRD_PARTY;
 
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
-        } else if(utils.get_element("Phone") != null) {
-            WebElement phone_field = utils.get_element("Phone");
-            if(phone_field.getAttribute("class").equals("android.widget.EditText")) {
-                selected_login_type = login_type.PHONE;
-                phone_field.sendKeys(profile.get_phone_number());
-
-                try {
-                    utils.get_element("next").click();
-                } catch (NullPointerException e) {
-                }
-            }
         } else {
             return false;
         }
@@ -114,7 +102,6 @@ public class AccountCreationAutomation {
                 logger.info("Third-party account method. No confirmation needed");
                 break;
             case PHONE:
-                // go get code from google voice
                 break;
             case EMAIL:
                 break;
