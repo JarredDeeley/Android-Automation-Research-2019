@@ -83,7 +83,7 @@ public class AutomationUtils {
         if(current_activity.contains("profile") || current_activity.contains("main")
                 || current_activity.contains("navigation") || current_activity.contains("landing")
                 || current_activity.contains("searchformspager") || current_activity.contains("home")
-                || current_activity.contains("sellersnearbyactivity") ) {
+                || current_activity.contains("sellersnearbyactivity") || current_activity.contains("searchactivity") ) {
             return true;
         }
 

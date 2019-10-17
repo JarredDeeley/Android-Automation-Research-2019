@@ -24,9 +24,12 @@ public class AccountCreationAutomation {
 
     public boolean find_account_creation_screen() throws InterruptedException {
         boolean found_account_creation = false;
-        boolean second_attempt = false;
+        boolean is_out_of_reattempts = false;
+        int reattempts_remaining = 2;
 
         while (true) {
+            TimeUnit.SECONDS.sleep(1);
+
             // condition check and base case
             List<WebElement> creation_fields = utils.get_elements("google");
 
@@ -51,9 +54,17 @@ public class AccountCreationAutomation {
                 break;
             }
 
-            WebElement signup_button = utils.get_element("sign up");
             try {
-                signup_button.click();
+                List<WebElement> sign_up_elementsutils = utils.get_elements("sign up");
+
+                for(WebElement element: sign_up_elementsutils) {
+                    logger.trace("sign up element's class: " + element.getAttribute("class"));
+
+                    if(element.getAttribute("class").equalsIgnoreCase("android.widget.Button")) {
+                        element.click();
+                        break;
+                    }
+                }
                 logger.info("clicking element with sign up text");
                 continue;
             }
@@ -67,9 +78,19 @@ public class AccountCreationAutomation {
             } catch (NullPointerException e) {
             }
 
-            if(!second_attempt) {
+            try {
+                utils.get_element("got it").click();
+                logger.info("Clicking got it");
+                continue;
+            } catch (NullPointerException e) {
+            }
+
+            if(!is_out_of_reattempts) {
                 logger.info("Failed to find element. Attempting again after sleep on off chance app needs to load");
-                second_attempt = true;
+                reattempts_remaining -= 1;
+                if(reattempts_remaining < 1) {
+                    is_out_of_reattempts = true;
+                }
                 TimeUnit.SECONDS.sleep(10);
                 continue;
             }
@@ -146,7 +167,7 @@ public class AccountCreationAutomation {
         return false;
     }
 
-    private void create_account_through_google(ProfileInformationLoader profile) {
+    private void create_account_through_google(ProfileInformationLoader profile) throws InterruptedException {
         WebElement google_button = utils.get_element("google");
 
         String google_email = profile.get_google_email();
@@ -154,6 +175,7 @@ public class AccountCreationAutomation {
         try {
             logger.info("Clicking google element");
             google_button.click();
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             if(google_email.isEmpty()) {
                 utils.get_element("@").click();
@@ -163,7 +185,10 @@ public class AccountCreationAutomation {
 
             utils.handle_google_radio_list();
 
-            if(utils.get_element("wants to access your Google account") != null) {
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
+
+            if(utils.get_element("wants to access") != null) {
+                logger.trace("clicking allow for google permissions");
                 utils.get_element("allow").click();
             }
         } catch (NullPointerException e) {

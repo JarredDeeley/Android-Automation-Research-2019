@@ -3,8 +3,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebElement;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -22,9 +20,11 @@ public class LoginAutomation {
 
     public boolean find_login_screen() throws InterruptedException {
         boolean found_login = false;
-        boolean second_attempt = false;
+        boolean is_out_of_reattempts = false;
+        int reattempts_remaining = 2;
 
         while(true) {
+            TimeUnit.SECONDS.sleep(1);
             // condition check
 
             List<WebElement> login_fields = utils.get_elements("user name");
@@ -70,7 +70,7 @@ public class LoginAutomation {
             }
 
             try {
-                utils.get_element("ok").click();
+                utils.get_element(" ok ").click();
                 logger.info("clicking ok");
                 continue;
             } catch (NullPointerException e){
@@ -103,9 +103,12 @@ public class LoginAutomation {
             } catch (NullPointerException e) {
             }
 
-            if(!second_attempt) {
+            if(!is_out_of_reattempts) {
                 logger.info("Attempting again in case of app loading on start");
-                second_attempt = true;
+                reattempts_remaining -= 1;
+                if(reattempts_remaining < 1) {
+                    is_out_of_reattempts = true;
+                }
                 TimeUnit.SECONDS.sleep(10);
                 continue;
             }
@@ -123,6 +126,8 @@ public class LoginAutomation {
         if(google_account_login != null) {
             logger.info("clicking google element");
             google_account_login.click();
+
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             // assuming desired google account is already on the list
             ProfileInformationLoader profile = new ProfileInformationLoader();
@@ -145,6 +150,8 @@ public class LoginAutomation {
                     return false;
                 }
             }
+
+            TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             // google permissions
             if(utils.get_element("wants to access your Google account") != null
