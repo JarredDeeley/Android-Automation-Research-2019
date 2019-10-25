@@ -20,8 +20,6 @@ public class LoginAutomation {
 
     public boolean find_login_screen() throws InterruptedException {
         boolean found_login = false;
-        boolean is_out_of_reattempts = false;
-        int reattempts_remaining = 2;
 
         while(true) {
             TimeUnit.SECONDS.sleep(1);
@@ -104,13 +102,7 @@ public class LoginAutomation {
             } catch (NullPointerException e) {
             }
 
-            if(!is_out_of_reattempts) {
-                logger.info("Attempting again in case of app loading on start");
-                reattempts_remaining -= 1;
-                if(reattempts_remaining < 1) {
-                    is_out_of_reattempts = true;
-                }
-                TimeUnit.SECONDS.sleep(10);
+            if(!utils.is_out_of_reattempts()) {
                 continue;
             }
 

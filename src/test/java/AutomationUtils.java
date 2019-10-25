@@ -8,10 +8,12 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AutomationUtils {
     private AppiumDriver driver;
     private int time_delay_for_network = 7;
+    private int reattempts_remaining = 2;
     private static final Logger logger = LogManager.getLogger(AutomationUtils.class);
 
     public AutomationUtils(AppiumDriver driver) {
@@ -118,5 +120,16 @@ public class AutomationUtils {
         desired_elements = driver.findElements(By.xpath(xpath_selector));
 
         return desired_elements;
+    }
+
+    public boolean is_out_of_reattempts() throws InterruptedException {
+        logger.info("Failed to find element. Attempting again after sleep on off chance app needs to load");
+        reattempts_remaining -= 1;
+        if(reattempts_remaining < 1) {
+            return true;
+        }
+        TimeUnit.SECONDS.sleep(10);
+
+        return false;
     }
 }

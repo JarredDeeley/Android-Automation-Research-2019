@@ -24,8 +24,6 @@ public class AccountCreationAutomation {
 
     public boolean find_account_creation_screen() throws InterruptedException {
         boolean found_account_creation = false;
-        boolean is_out_of_reattempts = false;
-        int reattempts_remaining = 2;
 
         while (true) {
             TimeUnit.SECONDS.sleep(1);
@@ -85,13 +83,7 @@ public class AccountCreationAutomation {
             } catch (NullPointerException e) {
             }
 
-            if(!is_out_of_reattempts) {
-                logger.info("Failed to find element. Attempting again after sleep on off chance app needs to load");
-                reattempts_remaining -= 1;
-                if(reattempts_remaining < 1) {
-                    is_out_of_reattempts = true;
-                }
-                TimeUnit.SECONDS.sleep(10);
+            if(!utils.is_out_of_reattempts()) {
                 continue;
             }
 
@@ -102,29 +94,16 @@ public class AccountCreationAutomation {
     }
 
     public boolean create_account() throws FileNotFoundException, InterruptedException {
-        login_type selected_login_type;
         ProfileInformationLoader profile = new ProfileInformationLoader();
 
         // login type
         if(utils.get_element("google") != null) {
             logger.info("Found google element");
             create_account_through_google(profile);
-            selected_login_type = login_type.THIRD_PARTY;
 
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
         } else {
             return false;
-        }
-
-        // confirmation
-        switch (selected_login_type) {
-            case THIRD_PARTY:
-                logger.info("Third-party account method. No confirmation needed");
-                break;
-            case PHONE:
-                break;
-            case EMAIL:
-                break;
         }
 
         //      These can be in any order
