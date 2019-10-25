@@ -36,7 +36,8 @@ public class LoginAutomation {
                 }
             }
 
-            if(utils.get_element("google") != null) {
+            if(utils.get_element("google") != null
+                    || utils.get_element_with_resource_id("google") != null) {
                 found_login = true;
             }
 
@@ -123,6 +124,11 @@ public class LoginAutomation {
     public boolean login() throws IOException, InterruptedException {
         // check for using another account to login (such as gmail)
         WebElement google_account_login = utils.get_element("google");
+
+        if(google_account_login == null) {
+            google_account_login = utils.get_element_with_resource_id("google");
+        }
+
         if(google_account_login != null) {
             logger.info("clicking google element");
             google_account_login.click();

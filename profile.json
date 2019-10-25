@@ -5,5 +5,9 @@
   "email" : "",
   "username" : "",
   "password" : "",
-  "google_email" : ""
+  "google_email" : "",
+  "age" : "",
+  "weight_kg" : "",
+  "height" : "",
+  "gender" : ""
 }

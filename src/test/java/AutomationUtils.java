@@ -11,7 +11,7 @@ import java.util.List;
 
 public class AutomationUtils {
     private AppiumDriver driver;
-    private int time_delay_for_network = 3;
+    private int time_delay_for_network = 7;
     private static final Logger logger = LogManager.getLogger(AutomationUtils.class);
 
     public AutomationUtils(AppiumDriver driver) {
@@ -83,10 +83,40 @@ public class AutomationUtils {
         if(current_activity.contains("profile") || current_activity.contains("main")
                 || current_activity.contains("navigation") || current_activity.contains("landing")
                 || current_activity.contains("searchformspager") || current_activity.contains("home")
-                || current_activity.contains("sellersnearbyactivity") || current_activity.contains("searchactivity") ) {
+                || current_activity.contains("sellersnearbyactivity") || current_activity.contains("searchactivity")
+                || current_activity.contains("newtargetweightactivity") || current_activity.contains("dashboardactivity")) {
             return true;
         }
 
         return false;
+    }
+
+    public WebElement get_element_with_resource_id(String search_string) {
+        WebElement desired_element = null;
+
+        String xpath_selector = String.format(
+                "//*[contains(translate(@resource-id, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"%s\")]",
+                search_string);
+
+        try {
+            desired_element = driver.findElement(By.xpath(xpath_selector));
+        } catch (NoSuchElementException e) {
+            logger.trace("Did not find element: " + search_string);
+        }
+
+        logger.trace(desired_element);
+
+        return desired_element;
+    }
+
+    public List<WebElement> get_elements_with_resource_id(String search_string) {
+        List<WebElement> desired_elements;
+        String xpath_selector = String.format(
+                "//*[contains(translate(@resource-id, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"%s\")]",
+                search_string);
+
+        desired_elements = driver.findElements(By.xpath(xpath_selector));
+
+        return desired_elements;
     }
 }

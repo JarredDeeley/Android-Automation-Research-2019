@@ -102,8 +102,7 @@ public class AccountCreationAutomation {
     }
 
     public boolean create_account() throws FileNotFoundException, InterruptedException {
-        boolean found_creation_method = false;
-        login_type selected_login_type = login_type.THIRD_PARTY;
+        login_type selected_login_type;
         ProfileInformationLoader profile = new ProfileInformationLoader();
 
         // login type
@@ -139,6 +138,11 @@ public class AccountCreationAutomation {
             }
 
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
+
+            // fill in profile info
+            if(utils.get_element("basic info") != null) {
+                fill_in_profile_info(profile);
+            }
 
             try {
                 utils.get_element("next").click();
@@ -193,5 +197,39 @@ public class AccountCreationAutomation {
             }
         } catch (NullPointerException e) {
         }
+    }
+
+    private void fill_in_profile_info(ProfileInformationLoader profile) {
+        for(WebElement element : utils.get_elements_with_resource_id("age")) {
+            if(element.getAttribute("class").equalsIgnoreCase("android.widget.EditText")) {
+                element.sendKeys(profile.get_age());
+                break;
+            }
+        }
+
+        for(WebElement element : utils.get_elements_with_resource_id("weight")) {
+            if(element.getAttribute("class").equalsIgnoreCase("android.widget.EditText")) {
+                element.sendKeys(profile.get_weight_kg());
+                break;
+            }
+        }
+
+        for(WebElement element : utils.get_elements_with_resource_id("feet")) {
+            if(element.getAttribute("class").equalsIgnoreCase("android.widget.EditText")) {
+                element.sendKeys(profile.get_height());
+                break;
+            }
+        }
+
+        if(utils.get_element_with_resource_id("gender") != null) {
+            utils.get_element_with_resource_id(profile.get_gender()).click();
+        }
+
+        WebElement daily_activity = utils.get_element_with_resource_id("tv_lifestyle");
+        if(daily_activity != null) {
+            daily_activity.click();
+            utils.get_element("less than").click();
+        }
+
     }
 }

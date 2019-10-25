@@ -45,4 +45,12 @@ public class ProfileInformationLoader {
 
         return google_email;
     }
+
+    public String get_age() { return profile.getString("age"); }
+
+    public String get_weight_kg() { return profile.getString("weight_kg"); }
+
+    public String get_height() { return profile.getString("height"); }
+
+    public String get_gender() { return profile.getString("gender"); }
 }
