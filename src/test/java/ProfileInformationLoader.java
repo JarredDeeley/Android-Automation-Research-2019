@@ -15,24 +15,21 @@ public class ProfileInformationLoader {
         reader.close();
     }
 
-    public String get_phone_number() {
-        return profile.getString("phone_number");
+    public String get_google_email() {
+        String google_email = "";
+
+        try{
+            google_email = profile.getString("google_email");
+        } catch (NullPointerException e){}
+
+        return google_email;
     }
 
-    public String get_first_name() {
-        return profile.getString("first_name");
-    }
+    public String get_age() { return profile.getString("age"); }
 
-    public String get_last_name() {
-        return profile.getString("last_name");
-    }
+    public String get_weight_kg() { return profile.getString("weight_kg"); }
 
-    public String get_full_name() {
-        return get_first_name() + " " + get_last_name();
-    }
+    public String get_height() { return profile.getString("height"); }
 
-    // Not a secure way of handling passwords
-    public String get_password() {
-        return profile.getString("password");
-    }
+    public String get_gender() { return profile.getString("gender"); }
 }
