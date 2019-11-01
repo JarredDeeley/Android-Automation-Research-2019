@@ -132,4 +132,18 @@ public class AutomationUtils {
 
         return false;
     }
+
+    public boolean click_elements(String[] elements_to_click) {
+        for(String search_string : elements_to_click) {
+            try {
+                get_element(search_string).click();
+                logger.info("clicking " + search_string);
+
+                return true;
+            } catch (NullPointerException e) {
+            }
+        }
+
+        return false;
+    }
 }
