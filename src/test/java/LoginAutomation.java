@@ -90,10 +90,7 @@ public class LoginAutomation {
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             // google permissions
-            if(utils.get_element("wants to access your Google account") != null
-               || utils.get_element("would like to:") != null) {
-                utils.get_element("allow").click();
-            }
+            utils.handle_google_permissions();
 
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 

@@ -146,4 +146,24 @@ public class AutomationUtils {
 
         return false;
     }
+
+    public void handle_google_permissions() {
+        if(get_element_with_ui_selector(".*wants to access your Google account.*") != null
+                || get_element_with_ui_selector(".*would like to:.*") != null) {
+            get_element("allow").click();
+        }
+    }
+
+    private WebElement get_element_with_ui_selector(String search_regex) {
+        WebElement desired_element = null;
+        String ui_selector = String.format("new UiSelector().textMatches(\"(?i)%s\")", search_regex);
+
+        try {
+            desired_element = ((AndroidDriver<?>) driver).findElementByAndroidUIAutomator(ui_selector);
+        } catch (NoSuchElementException e) {
+            logger.trace("Did not find element: " + search_regex + " with uiSelector");
+        }
+
+        return desired_element;
+    }
 }

@@ -146,10 +146,7 @@ public class AccountCreationAutomation {
 
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
-            if(utils.get_element("wants to access") != null) {
-                logger.trace("clicking allow for google permissions");
-                utils.get_element("allow").click();
-            }
+            utils.handle_google_permissions();
         } catch (NullPointerException e) {
         }
     }
