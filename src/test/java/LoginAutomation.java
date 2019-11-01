@@ -102,7 +102,7 @@ public class LoginAutomation {
         return false;
     }
 
-    private boolean get_to_main_activity() {
+    private boolean get_to_main_activity() throws InterruptedException {
         while(!utils.is_at_main_activity()) {
             String[] elements_to_click = {"skip", "continue"};
 

@@ -64,9 +64,9 @@ public class AutomationUtils {
     }
 
     public void handle_google_radio_list() {
-        if(this.get_element("@") != null) {
+        if(get_element("@") != null) {
             try {
-                this.get_element("ok").click();
+                get_element("ok").click();
             } catch (NullPointerException e) {
             }
         }
@@ -133,8 +133,9 @@ public class AutomationUtils {
         return false;
     }
 
-    public boolean click_elements(String[] elements_to_click) {
+    public boolean click_elements(String[] elements_to_click) throws InterruptedException {
         for(String search_string : elements_to_click) {
+
             try {
                 get_element(search_string).click();
                 logger.info("clicking " + search_string);
@@ -148,9 +149,15 @@ public class AutomationUtils {
     }
 
     public void handle_google_permissions() {
-        if(get_element_with_ui_selector(".*wants to access your Google account.*") != null
-                || get_element_with_ui_selector(".*would like to:.*") != null) {
-            get_element("allow").click();
+        if(get_element_with_ui_selector(".*wants to access your Google account.*") != null) {
+            List<WebElement> allow_elements = get_elements("allow");
+
+            for(WebElement element : allow_elements) {
+                if(element.getAttribute("class").equalsIgnoreCase("android.widget.Button")) {
+                    element.click();
+                    logger.info("Clicked allow for google permissions");
+                }
+            }
         }
     }
 

@@ -28,18 +28,23 @@ public class AccountCreationAutomation {
             }
 
             try {
-                List<WebElement> sign_up_elementsutils = utils.get_elements("sign up");
+                List<WebElement> sign_up_elements = utils.get_elements("sign up");
+                boolean clicked_sign_in_button = false;
 
-                for(WebElement element: sign_up_elementsutils) {
+                for(WebElement element: sign_up_elements) {
                     logger.trace("sign up element's class: " + element.getAttribute("class"));
 
                     if(element.getAttribute("class").equalsIgnoreCase("android.widget.Button")) {
                         element.click();
+                        logger.info("clicked element with sign up text");
+                        clicked_sign_in_button = true;
                         break;
                     }
                 }
-                logger.info("clicking element with sign up text");
-                continue;
+
+                if(clicked_sign_in_button) {
+                    continue;
+                }
             }
             catch (NullPointerException exception) {
             }
