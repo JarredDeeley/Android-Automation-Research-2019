@@ -19,80 +19,18 @@ public class LoginAutomation {
     }
 
     public boolean find_login_screen() throws InterruptedException {
-        boolean found_login = false;
-
         while(true) {
             TimeUnit.SECONDS.sleep(1);
-            // condition check
 
-            List<WebElement> login_fields = utils.get_elements("user name");
-            login_fields.addAll(utils.get_elements("email"));
-
-            for(WebElement element : login_fields) {
-                if(element.getAttribute("class").equals("android.widget.EditText")) {
-                    found_login = true;
-                }
-            }
-
-            if(utils.get_element("google") != null
-                    || utils.get_element_with_resource_id("google") != null) {
-                found_login = true;
-            }
-
-            if(found_login) {
+            if(is_at_login_screen()) {
                 break;
             }
 
             // Search through the screen to find elements
-            try {
-                utils.get_element("log in").click();
-                logger.info("clicking log in");
-                continue;
-            }
-            catch (NullPointerException e) {
-            }
+            String[] elements_to_click = {"log in", "sign in", "next", " ok ", "yes", "got it"};
 
-            try {
-                utils.get_element("sign in").click();
-                logger.info("clicking sign in");
+            if(utils.click_elements(elements_to_click)) {
                 continue;
-            }
-            catch (NullPointerException e) {
-            }
-
-            try {
-                utils.get_element("next").click();
-                logger.info("clicking next");
-                continue;
-            }
-            catch (NullPointerException e) {
-            }
-
-            try {
-                utils.get_element(" ok ").click();
-                logger.info("clicking ok");
-                continue;
-            } catch (NullPointerException e){
-            }
-
-            try {
-                utils.get_element("yes").click();
-                logger.info("clicking yes");
-                continue;
-            } catch (NullPointerException e){
-            }
-
-            if(utils.get_element("google smart lock") != null) {
-                utils.get_element("none of the above").click();
-                continue;
-            }
-
-            try {
-                utils.get_element("got it").click();
-                logger.info("clicking got it");
-
-                continue;
-            } catch (NullPointerException e){
             }
 
             try {
@@ -152,10 +90,7 @@ public class LoginAutomation {
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
             // google permissions
-            if(utils.get_element("wants to access your Google account") != null
-               || utils.get_element("would like to:") != null) {
-                utils.get_element("allow").click();
-            }
+            utils.handle_google_permissions();
 
             TimeUnit.SECONDS.sleep(utils.get_time_delay_for_network());
 
@@ -167,18 +102,12 @@ public class LoginAutomation {
         return false;
     }
 
-    private boolean get_to_main_activity() {
+    private boolean get_to_main_activity() throws InterruptedException {
         while(!utils.is_at_main_activity()) {
-            try {
-                utils.get_element("skip").click();
-                continue;
-            } catch (NullPointerException e) {
-            }
+            String[] elements_to_click = {"skip", "continue"};
 
-            try {
-                utils.get_element("continue").click();
+            if(utils.click_elements(elements_to_click)) {
                 continue;
-            } catch (NullPointerException e) {
             }
 
             return false;
@@ -193,6 +122,24 @@ public class LoginAutomation {
         errors.addAll(utils.get_elements("incorrect"));
 
         if(errors.size() > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean is_at_login_screen() {
+        List<WebElement> login_fields = utils.get_elements("user name");
+        login_fields.addAll(utils.get_elements("email"));
+
+        for(WebElement element : login_fields) {
+            if(element.getAttribute("class").equals("android.widget.EditText")) {
+                return true;
+            }
+        }
+
+        if(utils.get_element("google") != null
+                || utils.get_element_with_resource_id("google") != null) {
             return true;
         }
 
