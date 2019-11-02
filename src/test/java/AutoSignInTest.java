@@ -43,6 +43,7 @@ public class AutoSignInTest {
                 launchable_activity);
         desiredCapabilities.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, true);
         desiredCapabilities.setCapability("automationName", "uiautomator2");
+        desiredCapabilities.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, 0);
 
         driver = new AndroidDriver(new URL("http://0.0.0.0:4723/wd/hub"), desiredCapabilities);
         webDriverWait = new WebDriverWait(driver, time_out_seconds);
